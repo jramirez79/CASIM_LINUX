@@ -1,0 +1,1653 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <stddef.h>
+#include <string.h>
+#include <mpi.h>
+#include <sys/time.h>
+#include <time.h>
+#include <new>
+#include "cMacros.h"
+
+#ifdef MPI_PATHS_ON_NODES
+
+	#include "behaviorMPIpathsOnNodes.h"
+
+//#define MINOTAURO
+#define STENCIL
+
+#ifdef MINOTAURO
+	// includes, cuda
+	#include <cuda_runtime_api.h>
+
+	// CUDA utilities and system includes
+	#include <rendercheck_gl.h>
+	#include <sdkHelper.h>    // includes cuda.h and cuda_runtime_api.h
+	#include <shrQATest.h>    // standard utility and system includes
+#else
+	//LOCAL
+	// includes, cuda
+	#include <cuda_runtime.h>
+
+	// Utilities and timing functions
+	#include <helper_functions.h>    // includes cuda.h and cuda_runtime_api.h
+	#include <timer.h>
+
+	// CUDA helper functions
+	#include <helper_cuda.h>         // helper functions for CUDA error check
+	#include <helper_cuda_gl.h>      // helper functions for CUDA/GL interop
+
+#endif
+
+#include <cuda_gl_interop.h>
+#include <vector_types.h>
+
+////////////////////////////////////////////////////////////////////////////////
+//!	Global Variables
+////////////////////////////////////////////////////////////////////////////////
+#define DATA_COLLECT 3
+#define EXCHANGE_DATA_COMM 4
+#define WORLD_DATA_COLLECT 5
+#define REFRESH_DELAY     10 //ms
+#define MAX(a,b) ((a > b) ? a : b)
+
+//#define DEBUG
+
+#ifdef DEBUG
+	unsigned int agent_width = 8;
+	unsigned int agent_height = 8;
+	unsigned int world_width = 1024;
+	unsigned int world_height = 1024;
+#else
+
+	/*
+	unsigned int agent_width = 256;
+	unsigned int agent_height = 256;
+	unsigned int world_width = 1024;
+	unsigned int world_height = 1024;
+/*
+	unsigned int agent_width = 3;
+	unsigned int agent_height = 3;
+	unsigned int world_width = 1024;
+	unsigned int world_height = 1024;
+	*/
+#endif
+
+//unsigned int agents_total = agent_width * agent_height;
+
+int offset_wx, offset_wy;
+int radio = 5;
+
+////////////////////////////////////////////////////////////////////////////////
+//!	GL Variables
+////////////////////////////////////////////////////////////////////////////////
+// vbo variables
+GLuint vbo;
+struct cudaGraphicsResource *cuda_vbo_resource;
+void *d_vbo_buffer = NULL;
+
+//GPU Vectors
+float4 *d_agents_pos, *d_agents_ids;
+
+// mouse controls
+int mouse_old_x, mouse_old_y;
+int mouse_buttons = 0;
+float rotate_x = 0.0, rotate_y = 0.0;
+float translate_z = 0.0;
+
+StopWatchInterface *timer = NULL;
+
+// Auto-Verification Code
+int fpsCount = 0;        // FPS count for averaging
+int fpsLimit = 1;        // FPS limit for sampling
+float avgFPS = 0.0f;
+unsigned int frameCount = 0;
+unsigned int g_TotalErrors = 0;
+
+const char *sSDKsample = "Crowd (MPI+Cuda+OpenGL)";
+
+////////////////////////////////////////////////////////////////////////////////
+//!	Functions
+////////////////////////////////////////////////////////////////////////////////
+// GL functionality
+bool initGL(int *argc, char **argv);
+void createVBO(GLuint *vbo, struct cudaGraphicsResource **vbo_res, unsigned int vbo_res_flags);
+void deleteVBO(GLuint *vbo, struct cudaGraphicsResource *vbo_res);
+void computeFPS();
+
+// rendering callbacks
+void display();
+void keyboard(unsigned char key, int x, int y);
+void mouse(int button, int state, int x, int y);
+void motion(int x, int y);
+void timerEvent(int value);
+void idle(void);
+
+//Simulation functions
+void init_data(float4 *h_agents_in_pos, float4 *h_agents_in_ids, int world_width_node, int world_height_node, int num_comp_nodes, int pid, int agents_node,
+		int offset_wx, int offset_wy, int max_agents_node);
+bool runSimulation(int argc, char **argv);
+void refreshData(struct cudaGraphicsResource **vbo_resource);
+void compute_process();
+void display_data(float4 *h_agents_in_pos, float4 *h_agents_in_ids);
+float Ranf( float, float );
+void cleanup();
+
+void define_border_status_ini(float4 *h_agents_in_pos, float4 *h_agents_in_ids, int world_height_node, int world_width_node, int pid, int num_comp_nodes,
+		int2 *world_stencil_left_out, int2 *world_stencil_right_out, int2 *world_stencil_low_out, int2 *world_stencil_up_out,
+		int &count_agents_world_stencil_left_out, int &count_agents_world_stencil_right_out, int &count_agents_world_stencil_low_out,
+		int &count_agents_world_stencil_up_out, int count_agents_total, int offset_wx, int offset_wy);
+
+void reset_world_stencil(int2 *d_world_stencil_left_in, int2 *d_world_stencil_right_in, int2 *d_world_stencil_low_in, int2 *d_world_stencil_up_in,
+		int2 *world_stencil_left_in, int2 *world_stencil_right_in, int2 *world_stencil_low_in, int2 *world_stencil_up_in,
+		int2 *world_stencil_left_out, int2 *world_stencil_right_out, int2 *world_stencil_low_out, int2 *world_stencil_up_out,
+		int &count_agents_world_stencil_left_in, int &count_agents_world_stencil_right_in, int &count_agents_world_stencil_low_in, int &count_agents_world_stencil_up_in,
+		int &count_agents_world_stencil_left_out, int &count_agents_world_stencil_right_out, int &count_agents_world_stencil_low_out, int &count_agents_world_stencil_up_out);
+
+void compute_offset(int num_comp_nodes, int world_width_node, int world_height_node, int pid);
+
+extern "C" void launch_update_positions(float4 *d_agents_pos, float4 *d_agents_ids, int *d_world, int world_width_a, int world_height_a, int world_height_node,
+		int world_width_node, int pid, int num_comp_nodes, int count_agents_total, int offset_wx, int offset_wy, int radio);
+
+extern "C" void launch_update_right_ghost(int *d_world, int2 *d_world_stencil_right_in, int count_agents_world_stencil_right_in, int world_width_node_r,
+		int world_width_node);
+
+extern "C" void launch_update_left_ghost(int *d_world, int2 *d_world_stencil_left_in, int count_agents_world_stencil_left_in, int world_width_node_r,
+		int world_width_node);
+
+extern "C" void launch_update_up_ghost(int *d_world, int2 *d_world_stencil_up_in, int count_agents_world_stencil_up_in, int world_width_node_r, int world_height_node);
+extern "C" void launch_update_low_ghost(int *d_world, int2 *d_world_stencil_low_in, int count_agents_world_stencil_low_in, int world_width_node_r, int world_height_node);
+
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, char *file, int line, bool abort=true)
+{
+   if (code != cudaSuccess)
+   {
+      fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+      if (abort) exit(code);
+   }
+}
+
+
+#ifdef MINOTAURO
+////////////////////////////////////////////////////////////////////////////////
+// These are CUDA Helper functions
+// This will output the proper CUDA error strings in the event that a CUDA host call returns an error
+#define checkCudaErrors(err)           __checkCudaErrors (err, __FILE__, __LINE__)
+
+inline void __checkCudaErrors( cudaError err, const char *file, const int line )
+{
+	if( cudaSuccess != err) {
+		fprintf(stderr, "%s(%i) : CUDA Runtime API error %d: %s.\n",
+   	    file, line, (int)err, cudaGetErrorString( err ) );
+   	    exit(-1);
+	}
+}
+
+// This function returns the best GPU (with maximum GFLOPS)
+int gpuGetMaxGflopsDeviceId()
+{
+	int current_device     = 0, sm_per_multiproc  = 0;
+    int max_compute_perf   = 0, max_perf_device   = 0;
+    int device_count       = 0, best_SM_arch      = 0;
+    cudaDeviceProp deviceProp;
+    cudaGetDeviceCount( &device_count );
+
+    // Find the best major SM Architecture GPU device
+    while (current_device < device_count)
+    {
+    	cudaGetDeviceProperties( &deviceProp, current_device );
+	    if (deviceProp.major > 0 && deviceProp.major < 9999)
+	    {
+	    	best_SM_arch = MAX(best_SM_arch, deviceProp.major);
+	    }
+	    current_device++;
+	}
+
+	// Find the best CUDA capable GPU device
+    current_device = 0;
+    while( current_device < device_count )
+    {
+    	cudaGetDeviceProperties( &deviceProp, current_device );
+	    if (deviceProp.major == 9999 && deviceProp.minor == 9999)
+	    {
+	    	sm_per_multiproc = 1;
+	    }
+	    else
+	    {
+	        sm_per_multiproc = _ConvertSMVer2Cores(deviceProp.major, deviceProp.minor);
+	    }
+
+	    int compute_perf  = deviceProp.multiProcessorCount * sm_per_multiproc * deviceProp.clockRate;
+
+		if( compute_perf  > max_compute_perf )
+		{
+			// If we find GPU with SM major > 2, search only these
+		    if ( best_SM_arch > 2 )
+		    {
+		    	// If our device==dest_SM_arch, choose this, or else pass
+		        if (deviceProp.major == best_SM_arch)
+		        {
+		        	max_compute_perf  = compute_perf;
+		            max_perf_device   = current_device;
+		        }
+		    }
+        	else
+        	{
+        		max_compute_perf  = compute_perf;
+        		max_perf_device   = current_device;
+        	}
+        }
+        ++current_device;
+    }
+    return max_perf_device;
+}
+#endif //MINOTAURO
+
+
+////////////////////////////////////////////////////////////////////////////
+//! Check for OpenGL error
+//! @return CUTTrue if no GL error has been encountered, otherwise 0
+//! @param file  __FILE__ macro
+//! @param line  __LINE__ macro
+//! @note The GL error is listed on stderr
+//! @note This function should be used via the CHECK_ERROR_GL() macro
+////////////////////////////////////////////////////////////////////////////
+inline bool sdkCheckErrorGL( const char* file, const int line)
+{
+	bool ret_val = true;
+
+	// check for error
+	GLenum gl_error = glGetError();
+	if (gl_error != GL_NO_ERROR)
+	{
+   		#ifdef _WIN32
+			char tmpStr[512];
+			// NOTE: "%s(%i) : " allows Visual Studio to directly jump to the file at the right line
+			// when the user double clicks on the error line in the Output pane. Like any compile error.
+			sprintf_s(tmpStr, 255, "\n%s(%i) : GL Error : %s\n\n", file, line, gluErrorString(gl_error));
+			OutputDebugString(tmpStr);
+		#endif
+		fprintf(stderr, "GL Error in file '%s' in line %d :\n", file, line);
+		fprintf(stderr, "%s\n", gluErrorString(gl_error));
+		ret_val = false;
+	}
+	return ret_val;
+}
+
+#define SDK_CHECK_ERROR_GL()                                              \
+    if( false == sdkCheckErrorGL( __FILE__, __LINE__)) {                  \
+        exit(EXIT_FAILURE);                                               \
+    }
+
+////////////////////////////////////////////////////////////////////////////////
+//! Initialize GL
+////////////////////////////////////////////////////////////////////////////////
+bool initGL(int *argc, char **argv)
+{
+	int window_width = 1024;
+	int window_height = 1024;
+    glutInit(argc, argv);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
+    glutInitWindowSize(window_width, window_height);
+    glutInitWindowPosition(100,100);
+    glutCreateWindow("MPI Cuda GL Interop (VBO)");
+    glutDisplayFunc(display);
+    glutKeyboardFunc(keyboard);
+    glutMotionFunc(motion);
+    glutTimerFunc(REFRESH_DELAY, timerEvent,0);
+
+    // initialize necessary OpenGL extensions
+    glewInit();
+
+    if (! glewIsSupported("GL_VERSION_2_0 "))
+    {
+        fprintf(stderr, "ERROR: Support for necessary OpenGL extensions missing.");
+        fflush(stderr);
+        return false;
+    }
+
+    // default initialization
+    glClearColor(0.0, 0.0, 0.0, 1.0);
+    glDisable(GL_DEPTH_TEST);
+
+    // viewport
+    glViewport(0, 0, world_width, world_height);
+
+    // projection
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    //gluPerspective(60.0, (GLfloat)window_width / (GLfloat) window_height, 0.1, 10.0);
+    gluPerspective(60.0, (GLfloat)world_width / (GLfloat) world_height, 0.1, world_height*2);
+
+    // set view matrix
+    glMatrixMode(GL_MODELVIEW);
+
+    SDK_CHECK_ERROR_GL();
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Display callback
+////////////////////////////////////////////////////////////////////////////////
+void display()
+{
+    sdkStartTimer(&timer);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glLoadIdentity();
+    //Define camera position
+    gluLookAt(world_width/2, world_height * 0.4, world_height * 1.1,  world_width/2, world_height * 0.4, 0, 0,1,0);
+
+    // render from the vbo
+    glBindBuffer(GL_ARRAY_BUFFER, vbo);
+    glVertexPointer(4, GL_FLOAT, 0, 0);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glColor3f(1.0, 0.0, 0.0);
+    glPointSize(3);
+    glDrawArrays(GL_POINTS, 0, agent_width * agent_height);
+    glDisableClientState(GL_VERTEX_ARRAY);
+
+    glColor3f(0.0,1.0,0.0) ;
+
+    /********Box********/
+    glBegin(GL_LINES);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, world_height, 0.0f);
+    glEnd();
+
+    glBegin(GL_LINES);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(world_width, 0.0f, 0.0f);
+    glEnd();
+
+    glBegin(GL_LINES);
+    glVertex3f(0.0f, world_height, 0.0f);
+    glVertex3f(world_width, world_height, 0.0f);
+    glEnd();
+
+    glBegin(GL_LINES);
+    glVertex3f(world_width, 0.0f, 0.0f);
+    glVertex3f(world_width, world_height, 0.0f);
+    glEnd();
+    /********Box********/
+
+    /***
+    //Z axis
+    glBegin(GL_LINES);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glVertex3f(0.0f, 0.0f, world_width);
+    glEnd();
+     ***/
+    /*******Grid********/
+	int np;
+	MPI_Comm_size(MPI_COMM_WORLD, &np);
+
+	int num_comp_nodes = np -1;
+	int num_rows, num_cols;
+	int world_height_node, world_width_node;
+
+	num_rows = num_cols = sqrt(num_comp_nodes);
+
+	world_width_node = world_width / num_cols;
+	world_height_node = world_height / num_rows;
+
+	for( int i = 1; i < num_rows; i++)
+	{
+	    glBegin(GL_LINES);
+	    glVertex3f(world_width_node * i, 0.0f, 0.0f);
+	    glVertex3f(world_width_node * i, world_height, 0.0f);
+	    glEnd();
+
+	    glBegin(GL_LINES);
+	    glVertex3f(0.0f, world_height_node * i, 0.0f);
+	    glVertex3f(world_width, world_height_node * i, 0.0f);
+	    glEnd();
+	}
+	/*******Grid********/
+
+	glutSwapBuffers();
+
+    sdkStopTimer(&timer);
+    computeFPS();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Run OpenGL
+////////////////////////////////////////////////////////////////////////////////
+bool runSimulation(int argc, char **argv)
+{
+    // Create the CUTIL timer
+    sdkCreateTimer(&timer);
+
+    // First initialize OpenGL context, so we can properly set the GL for CUDA.
+    // This is necessary in order to achieve optimal performance with OpenGL/CUDA interop.
+    if (false == initGL(&argc, argv))
+    {
+        return false;
+    }
+
+    cudaGLSetGLDevice( gpuGetMaxGflopsDeviceId() );
+
+    // create VBO
+    createVBO(&vbo, &cuda_vbo_resource, cudaGraphicsMapFlagsWriteDiscard);
+
+    // register callbacks
+    glutDisplayFunc(display);
+    glutKeyboardFunc(keyboard);
+    glutMouseFunc(mouse);
+    glutMotionFunc(motion);
+    glutIdleFunc(idle);
+
+    // start rendering mainloop
+    glutMainLoop();
+
+    atexit(cleanup);
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Throught idle function defines loop to receive data
+////////////////////////////////////////////////////////////////////////////////
+void idle(void)
+{
+    refreshData(&cuda_vbo_resource);
+    glutPostRedisplay();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Receive data from the slaves
+////////////////////////////////////////////////////////////////////////////////
+void refreshData(struct cudaGraphicsResource **vbo_resource)
+{
+	int np;
+	MPI_Comm_size(MPI_COMM_WORLD, &np);
+	MPI_Status status;
+
+	int num_comp_nodes = np -1;
+	size_t size_agents = agents_total * sizeof(float4);
+
+	float4 *h_agents_in_pos = new float4[agents_total]();
+	float4 *h_agents_in_ids = new float4[agents_total]();
+	float4 *h_agents_out_pos = new float4[agents_total]();
+	float4 *h_agents_out_ids = new float4[agents_total]();
+
+	unsigned int count_agents_out = 0, i=0;
+
+	// map OpenGL buffer object for writing from CUDA
+    float4 *d_agents;
+    // Error code to check return values for CUDA calls
+    cudaError_t err = cudaSuccess;
+
+    checkCudaErrors(cudaGraphicsMapResources(1, vbo_resource, 0));
+    size_t num_agents_bytes;
+    checkCudaErrors(cudaGraphicsResourceGetMappedPointer((void **)&d_agents, &num_agents_bytes, *vbo_resource));
+	try
+	{
+		/* Wait for nodes to compute */
+		MPI_Barrier(MPI_COMM_WORLD);
+
+		for(int process = 1; process <= num_comp_nodes; process++)
+		{
+			MPI_Recv(&count_agents_out, 1, MPI_INT, process, DATA_COLLECT, MPI_COMM_WORLD, &status);
+			MPI_Recv(h_agents_out_pos, agents_total * 4, MPI_FLOAT, process, DATA_COLLECT, MPI_COMM_WORLD, &status);
+			MPI_Recv(h_agents_out_ids, agents_total * 4, MPI_FLOAT, process, DATA_COLLECT, MPI_COMM_WORLD, &status);
+
+			for( i = 0; i < count_agents_out; i++)
+			{
+				h_agents_in_pos[(int)(h_agents_out_ids[i].x - 1)] = h_agents_out_pos[i];
+				h_agents_in_ids[(int)(h_agents_out_ids[i].x - 1)] = h_agents_out_ids[i];
+				h_agents_in_pos[(int)(h_agents_out_ids[i].x - 1)].z = 0;
+				h_agents_in_pos[(int)(h_agents_out_ids[i].x - 1)].w = 1;
+			}
+		}
+
+		#ifdef DEBUG
+			printf("Final Data:\n");
+			display_data(h_agents_in_pos, h_agents_in_ids);
+		#endif
+
+		// Copy the host pointer memory to the device memory
+		err = cudaMemcpy(d_agents, h_agents_in_pos, size_agents, cudaMemcpyHostToDevice);
+
+		if (err != cudaSuccess)
+		{
+			fprintf(stderr, "Failed to copy pointer from host to device 1 (error code %s)!\n", cudaGetErrorString(err));
+			exit(EXIT_FAILURE);
+		}
+
+		// unmap buffer object
+		checkCudaErrors(cudaGraphicsUnmapResources(1, vbo_resource, 0));
+
+		// release resources
+		delete h_agents_in_pos;
+		delete h_agents_in_ids;
+		delete h_agents_out_pos;
+		delete h_agents_out_ids;
+		cudaFree(d_agents);
+	}
+	catch(...){
+		printf("Exception Fail\n");
+		delete h_agents_in_pos;
+		delete h_agents_in_ids;
+		delete h_agents_out_pos;
+		delete h_agents_out_ids;
+		cudaFree(d_agents);
+	}
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////
+//! Slaves compute and return data to the Master, also interchange data between them
+////////////////////////////////////////////////////////////////////////////////////
+void compute_process()
+{
+	cudaSetDevice(gpuGetMaxGflopsDeviceId());
+
+	int np, pid;
+	static bool initFlag = true;
+	MPI_Comm_rank(MPI_COMM_WORLD, &pid);
+	MPI_Comm_size(MPI_COMM_WORLD, &np);
+	int server_process = 0;
+	MPI_Status status;
+	MPI_Request	send_request;
+
+	int num_comp_nodes = np -1;
+
+	int num_rows, num_cols;
+	int world_height_node, world_width_node;
+
+	num_rows = num_cols = sqrt(num_comp_nodes);
+	world_width_node = world_width / num_cols;
+	world_height_node = world_height / num_rows;
+
+	//Mundo parcial Con stencil
+	int world_width_node_r = world_width_node + (2 * radio);
+	int cells_node = world_width_node_r * ( world_height_node + (2 * radio) );
+
+	size_t size_world = cells_node * sizeof(int);
+	int *h_world = new int[cells_node]();
+
+	int *d_world;
+
+
+
+	int agents_total_buffer = agents_total * 0.4;
+	int agents_total_buffer2 = agents_total * 0.02;
+	int agents_total_buffer3 = agents_total * 0.01;
+	int tam_buffer_interchange = agents_total_buffer2 * sizeof(float4);
+
+	//Vector to receive from the master and iterate
+	float4 *h_agents_in_ids = new float4[agents_total_buffer]();
+	float4 *h_agents_in_pos = new float4[agents_total_buffer]();
+
+	//Vector to send to the master
+	float4 *h_agents_out_pos = new float4[agents_total_buffer]();
+	float4 *h_agents_out_ids = new float4[agents_total_buffer]();
+
+	//Vector to receive from neighbors
+	float4 *h_agents_int_pos = new float4[agents_total_buffer2]();
+	float4 *h_agents_int_ids = new float4[agents_total_buffer2]();
+
+	//Vector to send agents to the neighbors
+	float4 *h_agents_left_out_pos = new float4[agents_total_buffer3]();
+	float4 *h_agents_left_out_ids = new float4[agents_total_buffer3]();
+	float4 *h_agents_right_out_pos = new float4[agents_total_buffer3]();
+	float4 *h_agents_right_out_ids = new float4[agents_total_buffer3]();
+	float4 *h_agents_low_out_pos = new float4[agents_total_buffer3]();
+	float4 *h_agents_low_out_ids = new float4[agents_total_buffer3]();
+	float4 *h_agents_up_out_pos = new float4[agents_total_buffer3]();
+	float4 *h_agents_up_out_ids = new float4[agents_total_buffer3]();
+	int count_agents_int = 0;
+	int count_agents_out = 0;
+	int count_agents_total = 0;
+
+	unsigned int num_bytes_agents_max = agents_total_buffer * sizeof(float4);
+	unsigned int num_bytes_agents_curr= 0;
+	unsigned int count_agents_right_out = 0, count_agents_left_out = 0;
+	unsigned int count_agents_up_out = 0, count_agents_low_out = 0;
+	unsigned int count_agents_right_in = 0, count_agents_left_in = 0;
+	unsigned int count_agents_up_in = 0, count_agents_low_in = 0;
+	int i = 0;
+
+	int left_neighbor = ( pid % num_cols != 1) ? (pid - 1) : MPI_PROC_NULL;
+	int right_neighbor = (pid % num_cols) ? (pid + 1) : MPI_PROC_NULL;
+	int up_neighbor = (pid <= (num_cols * num_cols) - num_cols) ? (pid + num_cols) : MPI_PROC_NULL;
+	int low_neighbor = (pid > num_cols) ? (pid - num_cols) : MPI_PROC_NULL;
+
+    ////////////////////////////////////////////////////////////////////////////////
+	//World stencils
+    ////////////////////////////////////////////////////////////////////////////////
+
+#ifdef STENCIL
+	int tam_buffer_stencil = agents_total * 0.06;
+
+	int2 *world_stencil_left_out = new int2[tam_buffer_stencil]();
+	int2 *world_stencil_left_in = new int2[tam_buffer_stencil]();
+	int2 *world_stencil_right_out = new int2[tam_buffer_stencil]();
+	int2 *world_stencil_right_in = new int2[tam_buffer_stencil]();
+
+	int2 *world_stencil_low_out = new int2[tam_buffer_stencil]();
+	int2 *world_stencil_low_in = new int2[tam_buffer_stencil]();
+	int2 *world_stencil_up_out = new int2[tam_buffer_stencil]();
+	int2 *world_stencil_up_in = new int2[tam_buffer_stencil]();
+
+	int count_agents_world_stencil_left_out = 0, count_agents_world_stencil_left_in = 0;
+	int count_agents_world_stencil_right_out = 0, count_agents_world_stencil_right_in = 0;
+	int count_agents_world_stencil_low_out = 0, count_agents_world_stencil_low_in = 0;
+	int count_agents_world_stencil_up_out = 0, count_agents_world_stencil_up_in = 0;
+
+	int2 *d_world_stencil_left_in, *d_world_stencil_right_in, *d_world_stencil_low_in, *d_world_stencil_up_in;
+
+	unsigned int num_bytes_stencil_max = tam_buffer_stencil * sizeof(int2);
+
+#endif
+
+	int agents_node = 0;
+	int max_agents_node = 0;
+
+	agents_node = agents_total / num_comp_nodes;
+
+	if (agents_total % num_comp_nodes)
+	{
+		if (pid == 1)
+			agents_node += agents_total % num_comp_nodes;
+
+		max_agents_node = agents_node + (agents_total % num_comp_nodes);
+	}
+	else
+		max_agents_node = agents_node;
+
+	// Error code to check return values for CUDA calls
+    cudaError_t err = cudaSuccess;
+
+    ////////////////////////////////////////////////////////////////////////////////
+	// Allocate the device pointers
+    ////////////////////////////////////////////////////////////////////////////////
+  	err = cudaMalloc((void **)&d_world, size_world);
+	if (err != cudaSuccess)
+	{
+       	fprintf(stderr, "Failed to allocate device pointer (error code %s)!\n", cudaGetErrorString(err));
+       	exit(EXIT_FAILURE);
+    }
+
+   	err = cudaMalloc((void **)&d_agents_pos, num_bytes_agents_max);
+	if (err != cudaSuccess)
+	{
+       	fprintf(stderr, "Failed to allocate device pointer (error code %s)!\n", cudaGetErrorString(err));
+       	exit(EXIT_FAILURE);
+    }
+
+   	err = cudaMalloc((void **)&d_agents_ids, num_bytes_agents_max);
+	if (err != cudaSuccess)
+	{
+       	fprintf(stderr, "Failed to allocate device pointer (error code %s)!\n", cudaGetErrorString(err));
+       	exit(EXIT_FAILURE);
+    }
+
+	//Initialize device pointers
+	cudaMemset(d_agents_pos, 0, num_bytes_agents_max);
+	cudaMemset(d_agents_ids, 0, num_bytes_agents_max);
+	cudaMemset(d_world, 0, size_world);
+
+
+#ifdef STENCIL
+	err = cudaMalloc((void **)&d_world_stencil_left_in, num_bytes_stencil_max);
+	if (err != cudaSuccess)
+	{
+       	fprintf(stderr, "Failed to allocate device pointer d_world_stencil_left_in(error code %s)!\n", cudaGetErrorString(err));
+       	exit(EXIT_FAILURE);
+    }
+
+	err = cudaMalloc((void **)&d_world_stencil_right_in, num_bytes_stencil_max);
+	if (err != cudaSuccess)
+	{
+       	fprintf(stderr, "Failed to allocate device pointer d_world_stencil_right_in(error code %s)!\n", cudaGetErrorString(err));
+       	exit(EXIT_FAILURE);
+    }
+
+	err = cudaMalloc((void **)&d_world_stencil_low_in, num_bytes_stencil_max);
+	if (err != cudaSuccess)
+	{
+       	fprintf(stderr, "Failed to allocate device pointer d_world_stencil_low_in(error code %s)!\n", cudaGetErrorString(err));
+       	exit(EXIT_FAILURE);
+    }
+
+	err = cudaMalloc((void **)&d_world_stencil_up_in, num_bytes_stencil_max);
+	if (err != cudaSuccess)
+	{
+       	fprintf(stderr, "Failed to allocate device pointer d_world_stencil_up_in(error code %s)!\n", cudaGetErrorString(err));
+       	exit(EXIT_FAILURE);
+    }
+
+	cudaMemset(d_world_stencil_left_in, 0, num_bytes_stencil_max);
+	cudaMemset(d_world_stencil_right_in, 0, num_bytes_stencil_max);
+	cudaMemset(d_world_stencil_low_in, 0, num_bytes_stencil_max);
+	cudaMemset(d_world_stencil_up_in, 0, num_bytes_stencil_max);
+
+#endif
+
+	try {
+
+		if (initFlag)
+		{
+			compute_offset(num_comp_nodes, world_width_node, world_height_node, pid);
+			//printf("pid: %d offset_wx: %d offset_wy: %d\n", pid, offset_wx, offset_wy);
+
+			////////////////////////////////////////////////////////////////////////////////
+			//! Agents Initialization
+			////////////////////////////////////////////////////////////////////////////////
+			init_data(h_agents_in_pos, h_agents_in_ids, world_width_node, world_height_node, num_comp_nodes, pid, agents_node, offset_wx, offset_wy, max_agents_node);
+
+			#ifdef DEBUG
+				printf("Init data\n");
+				display_data(h_agents_in_pos, h_agents_in_ids);
+			#endif
+
+			count_agents_total = agents_node;
+
+			//Set busy cells in the world
+			for( i = 0; i < count_agents_total; i++)
+			{
+				h_world[(int) (   ( round(h_agents_in_pos[i].y) + offset_wy - 1) * world_width_node_r + round(h_agents_in_pos[i].x) + offset_wx )] = h_agents_in_ids[i].x;
+			}
+
+			num_bytes_agents_curr = count_agents_total * sizeof(float4);
+
+			#ifdef STENCIL
+				//Define status borders
+				define_border_status_ini(h_agents_in_pos, h_agents_in_ids, world_height_node, world_width_node, pid, num_comp_nodes,
+						world_stencil_left_out, world_stencil_right_out, world_stencil_low_out, world_stencil_up_out,
+						count_agents_world_stencil_left_out, count_agents_world_stencil_right_out,
+						count_agents_world_stencil_low_out, count_agents_world_stencil_up_out, count_agents_total, offset_wx, offset_wy);
+
+				//send world data to gpu
+				err = cudaMemcpy(d_world, h_world, size_world, cudaMemcpyHostToDevice);
+				if (err != cudaSuccess)
+				{
+					fprintf(stderr, "Failed to copy pointer from host to device 2 (error code %s)!\n", cudaGetErrorString(err));
+					exit(EXIT_FAILURE);
+				}
+			#endif
+
+			////////////////////////////////////////////////////////////////////////////////
+			//! Transfer data to GPU
+			////////////////////////////////////////////////////////////////////////////////
+			err = cudaMemcpy(d_agents_pos, h_agents_in_pos, num_bytes_agents_curr, cudaMemcpyHostToDevice);
+			if (err != cudaSuccess)
+				{
+					fprintf(stderr, "Failed to copy pointer from host to device 3 (error code %s)!\n", cudaGetErrorString(err));
+					exit(EXIT_FAILURE);
+				}
+
+			err = cudaMemcpy(d_agents_ids, h_agents_in_ids, num_bytes_agents_curr, cudaMemcpyHostToDevice);
+			if (err != cudaSuccess)
+				{
+					fprintf(stderr, "Failed to copy pointer from host to device 4 (error code %s)!\n", cudaGetErrorString(err));
+					exit(EXIT_FAILURE);
+				}
+			initFlag = !initFlag;
+		} // if (initFlag)
+		memset(h_agents_in_pos, 0, num_bytes_agents_max);
+		memset(h_agents_in_ids, 0, num_bytes_agents_max);
+
+
+		//////////////////////////////////////////////////////////////////////////////////////////////
+		//Loop to process agents, interchange data with the nodes and return the results to the master
+		//////////////////////////////////////////////////////////////////////////////////////////////
+		while(true)
+		{
+		#ifdef STENCIL
+			////////////////////////////////////////////////////////////////////////////////
+			//send and recv status borders with neighbors
+			//update world ghost borders
+			////////////////////////////////////////////////////////////////////////////////
+			MPI_Send(world_stencil_left_out, count_agents_world_stencil_left_out * 2, MPI_INT, left_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD);
+			MPI_Send(&count_agents_world_stencil_left_out, 1, MPI_INT, left_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD);
+
+			MPI_Recv(world_stencil_right_in, tam_buffer_stencil * 2, MPI_INT, right_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD, &status);
+			MPI_Recv(&count_agents_world_stencil_right_in, 1, MPI_INT, right_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD, &status);
+
+			err = cudaMemcpy(d_world_stencil_right_in, world_stencil_right_in, ( count_agents_world_stencil_right_in * sizeof(int2) ), cudaMemcpyHostToDevice);
+			if (err != cudaSuccess)
+			{
+				fprintf(stderr, "Failed to copy pointer from host to device d_world_stencil_right_in (error code %s)!\n", cudaGetErrorString(err));
+				exit(EXIT_FAILURE);
+			}
+
+			launch_update_right_ghost(d_world, d_world_stencil_right_in, count_agents_world_stencil_right_in, world_width_node_r, world_width_node);
+
+			MPI_Send(world_stencil_right_out, count_agents_world_stencil_right_out * 2, MPI_INT, right_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD);
+			MPI_Send(&count_agents_world_stencil_right_out, 1, MPI_INT, right_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD);
+
+			MPI_Recv(world_stencil_left_in, tam_buffer_stencil * 2, MPI_INT, left_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD, &status);
+			MPI_Recv(&count_agents_world_stencil_left_in, 1, MPI_INT, left_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD, &status);
+
+			err = cudaMemcpy(d_world_stencil_left_in, world_stencil_left_in, ( count_agents_world_stencil_left_in * sizeof(int2) ), cudaMemcpyHostToDevice);
+			if (err != cudaSuccess)
+			{
+				fprintf(stderr, "Failed to copy pointer from host to device d_world_stencil_left_in (error code %s)!\n", cudaGetErrorString(err));
+				exit(EXIT_FAILURE);
+			}
+
+			launch_update_left_ghost(d_world, d_world_stencil_left_in, count_agents_world_stencil_left_in, world_width_node_r, world_width_node);
+
+
+			MPI_Send(world_stencil_low_out, count_agents_world_stencil_low_out * 2, MPI_INT, low_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD);
+			MPI_Send(&count_agents_world_stencil_low_out, 1, MPI_INT, low_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD);
+
+			MPI_Recv(world_stencil_up_in, tam_buffer_stencil * 2, MPI_INT, up_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD, &status);
+			MPI_Recv(&count_agents_world_stencil_up_in, 1, MPI_INT, up_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD, &status);
+
+			err = cudaMemcpy(d_world_stencil_up_in, world_stencil_up_in, ( count_agents_world_stencil_up_in * sizeof(int2) ), cudaMemcpyHostToDevice);
+			if (err != cudaSuccess)
+			{
+				fprintf(stderr, "Failed to copy pointer from host to device d_world_stencil_up_in (error code %s)!\n", cudaGetErrorString(err));
+				exit(EXIT_FAILURE);
+			}
+
+			launch_update_up_ghost(d_world, d_world_stencil_up_in, count_agents_world_stencil_up_in, world_width_node_r, world_height_node);
+
+			MPI_Send(world_stencil_up_out, count_agents_world_stencil_up_out * 2, MPI_INT, up_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD);
+			MPI_Send(&count_agents_world_stencil_up_out, 1, MPI_INT, up_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD);
+
+			MPI_Recv(world_stencil_low_in, tam_buffer_stencil * 2, MPI_INT, low_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD, &status);
+			MPI_Recv(&count_agents_world_stencil_low_in, 1, MPI_INT, low_neighbor, WORLD_DATA_COLLECT, MPI_COMM_WORLD, &status);
+
+			err = cudaMemcpy(d_world_stencil_low_in, world_stencil_low_in, ( count_agents_world_stencil_low_in * sizeof(int2) ), cudaMemcpyHostToDevice);
+			if (err != cudaSuccess)
+			{
+				fprintf(stderr, "Failed to copy pointer from host to device d_world_stencil_low_in (error code %s)!\n", cudaGetErrorString(err));
+				exit(EXIT_FAILURE);
+			}
+
+			launch_update_low_ghost(d_world, d_world_stencil_low_in, count_agents_world_stencil_low_in, world_width_node_r, world_height_node);
+
+		#endif //endif stencil
+
+			if (count_agents_total)
+			{
+				////////////////////////////////////////////////////////////////////////////////
+				//! Kernels Compute behavior and position
+				////////////////////////////////////////////////////////////////////////////////
+				launch_update_positions(d_agents_pos, d_agents_ids, d_world, world_width, world_height, world_height_node, world_width_node,
+						pid, num_comp_nodes, count_agents_total, offset_wx, offset_wy, radio);
+
+				err = cudaMemcpy(h_agents_in_pos, d_agents_pos, num_bytes_agents_curr, cudaMemcpyDeviceToHost);
+				if (err != cudaSuccess)
+				{
+					fprintf(stderr, "pid: %d, num_bytes_agents_curr: %d Failed to copy pointer d_agents_pos kernel from device to host (error code %s)!\n",
+							pid, num_bytes_agents_curr, cudaGetErrorString(err));
+					exit(EXIT_FAILURE);
+				}
+
+				err = cudaMemcpy(h_agents_in_ids, d_agents_ids, num_bytes_agents_curr, cudaMemcpyDeviceToHost);
+				if (err != cudaSuccess)
+				{
+					fprintf(stderr, "pid: %d, num_bytes_agents_curr: %d, Failed to copy pointer d_agents_ids kernel from device to host (error code %s)!\n",
+							pid, num_bytes_agents_curr, cudaGetErrorString(err));
+					exit(EXIT_FAILURE);
+				}
+
+				gpuErrchk( cudaDeviceSynchronize() );
+
+				////////////////////////////////////////////////////////////////////////////////
+				//Identify agents by zone
+				////////////////////////////////////////////////////////////////////////////////
+				//Kernel/Pragma
+				for( i = 0; i < count_agents_total; i++)
+				{
+					//left neighbor
+					if(h_agents_in_ids[i].z == left_neighbor)
+					{
+						h_agents_left_out_pos[count_agents_left_out] = h_agents_in_pos[i];
+						h_agents_left_out_ids[count_agents_left_out] = h_agents_in_ids[i];
+						count_agents_left_out++;
+					} //right neighbor
+					else if(h_agents_in_ids[i].z == right_neighbor)
+					{
+						h_agents_right_out_pos[count_agents_right_out] = h_agents_in_pos[i];
+						h_agents_right_out_ids[count_agents_right_out] = h_agents_in_ids[i];
+						count_agents_right_out++;
+					}//lower neighbor
+					else if(h_agents_in_ids[i].z == low_neighbor)
+					{
+						h_agents_low_out_pos[count_agents_low_out] = h_agents_in_pos[i];
+						h_agents_low_out_ids[count_agents_low_out] = h_agents_in_ids[i];
+						count_agents_low_out++;
+					}//upper neighbor
+					else if(h_agents_in_ids[i].z == up_neighbor )
+					{
+						h_agents_up_out_pos[count_agents_up_out] = h_agents_in_pos[i];
+						h_agents_up_out_ids[count_agents_up_out] = h_agents_in_ids[i];
+						count_agents_up_out++;
+					}
+					else if(h_agents_in_ids[i].z == pid )
+					{
+						h_agents_out_pos[count_agents_out] = h_agents_in_pos[i];
+						h_agents_out_ids[count_agents_out] = h_agents_in_ids[i];
+						count_agents_out++;
+					}
+				}
+			}//Fin if(count_agents_total)
+
+
+			////////////////////////////////////////////////////////////////////////////////
+			//! Reset device vectors
+			////////////////////////////////////////////////////////////////////////////////
+			//reset device vectors
+			cudaMemset(d_agents_pos, 0, num_bytes_agents_max);
+			cudaMemset(d_agents_ids, 0, num_bytes_agents_max);
+
+			unsigned int num_bytes_agents_out = count_agents_out  * sizeof(float4);
+
+			//transfer to GPU just internal agents
+			err = cudaMemcpy(d_agents_pos, h_agents_out_pos, num_bytes_agents_out, cudaMemcpyHostToDevice);
+			if (err != cudaSuccess)
+			{
+				fprintf(stderr, "Failed to copy pointer from host to device 3 (error code %s)!\n", cudaGetErrorString(err));
+				exit(EXIT_FAILURE);
+			}
+
+			err = cudaMemcpy(d_agents_ids, h_agents_out_ids, num_bytes_agents_out, cudaMemcpyHostToDevice);
+			if (err != cudaSuccess)
+			{
+				fprintf(stderr, "Failed to copy pointer from host to device 4 (error code %s)!\n", cudaGetErrorString(err));
+				exit(EXIT_FAILURE);
+			}
+
+			//gpuErrchk( cudaDeviceSynchronize() );
+
+			count_agents_total = count_agents_out;
+
+			//printf("pid: %d count_agents_total: %d count_agents_out: %d count_agents_int: %d \n", pid, count_agents_total, count_agents_out, count_agents_int);
+
+			////////////////////////////////////////////////////////////////////////////////
+			//! Compute world stencil
+			////////////////////////////////////////////////////////////////////////////////
+			#ifdef STENCIL
+			//clean world stencils
+			reset_world_stencil(d_world_stencil_left_in, d_world_stencil_right_in, d_world_stencil_low_in, d_world_stencil_up_in,
+					world_stencil_left_in, world_stencil_right_in, world_stencil_low_in, world_stencil_up_in,
+					world_stencil_left_out, world_stencil_right_out, world_stencil_low_out, world_stencil_up_out,
+					count_agents_world_stencil_left_in, count_agents_world_stencil_right_in, count_agents_world_stencil_low_in, count_agents_world_stencil_up_in,
+					count_agents_world_stencil_left_out, count_agents_world_stencil_right_out, count_agents_world_stencil_low_out, count_agents_world_stencil_up_out);
+
+			//refill world stencils status
+			define_border_status_ini(h_agents_in_pos, h_agents_in_ids, world_height_node, world_width_node, pid, num_comp_nodes,
+					world_stencil_left_out, world_stencil_right_out, world_stencil_low_out, world_stencil_up_out,
+					count_agents_world_stencil_left_out, count_agents_world_stencil_right_out,
+					count_agents_world_stencil_low_out, count_agents_world_stencil_up_out, count_agents_total, offset_wx, offset_wy);
+
+			#endif
+
+			MPI_Barrier(MPI_COMM_WORLD);
+
+			////////////////////////////////////////////////////////////////////////////////
+			//! Send and receive data from the neighbors
+			////////////////////////////////////////////////////////////////////////////////
+			MPI_Send(h_agents_left_out_pos, count_agents_left_out * 4, MPI_FLOAT, left_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD);
+			MPI_Send(h_agents_left_out_ids, count_agents_left_out * 4, MPI_FLOAT, left_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD);
+			MPI_Send(&count_agents_left_out, 1, MPI_INT, left_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD);
+
+			MPI_Recv(h_agents_int_pos, tam_buffer_interchange, MPI_FLOAT, right_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD, &status);
+			MPI_Recv(h_agents_int_ids, tam_buffer_interchange, MPI_FLOAT, right_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD, &status);
+			MPI_Recv(&count_agents_right_in, 1, MPI_INT, right_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD, &status);
+			count_agents_int += count_agents_right_in;
+
+
+			MPI_Send(h_agents_right_out_pos, count_agents_right_out * 4, MPI_FLOAT, right_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD);
+			MPI_Send(h_agents_right_out_ids, count_agents_right_out * 4, MPI_FLOAT, right_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD);
+			MPI_Send(&count_agents_right_out, 1, MPI_INT, right_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD);
+
+			MPI_Recv(h_agents_int_pos + count_agents_int, tam_buffer_interchange, MPI_FLOAT, left_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD, &status);
+			MPI_Recv(h_agents_int_ids + count_agents_int, tam_buffer_interchange, MPI_FLOAT, left_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD, &status);
+			MPI_Recv(&count_agents_left_in, 1, MPI_INT, left_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD, &status);
+			count_agents_int += count_agents_left_in;
+
+
+			MPI_Send(h_agents_low_out_pos, count_agents_low_out * 4, MPI_FLOAT, low_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD);
+			MPI_Send(h_agents_low_out_ids, count_agents_low_out * 4, MPI_FLOAT, low_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD);
+			MPI_Send(&count_agents_low_out, 1, MPI_INT, low_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD);
+
+			MPI_Recv(h_agents_int_pos + count_agents_int, tam_buffer_interchange, MPI_FLOAT, up_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD, &status);
+			MPI_Recv(h_agents_int_ids + count_agents_int, tam_buffer_interchange, MPI_FLOAT, up_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD, &status);
+			MPI_Recv(&count_agents_up_in, 1, MPI_INT, up_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD, &status);
+			count_agents_int += count_agents_up_in;
+
+
+			MPI_Send(h_agents_up_out_pos, count_agents_up_out * 4, MPI_FLOAT, up_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD);
+			MPI_Send(h_agents_up_out_ids, count_agents_up_out * 4, MPI_FLOAT, up_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD);
+			MPI_Send(&count_agents_up_out, 1, MPI_INT, up_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD);
+
+			MPI_Recv(h_agents_int_pos + count_agents_int, tam_buffer_interchange, MPI_FLOAT, low_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD, &status);
+			MPI_Recv(h_agents_int_ids + count_agents_int, tam_buffer_interchange, MPI_FLOAT, low_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD, &status);
+			MPI_Recv(&count_agents_low_in, 1, MPI_INT, low_neighbor, EXCHANGE_DATA_COMM, MPI_COMM_WORLD, &status);
+			count_agents_int += count_agents_low_in;
+
+
+			//printf("count_agents_int: %d \n", count_agents_int);
+			////////////////////////////////////////////////////////////////////////////////
+			//Adding internal agents to interchange agents
+			////////////////////////////////////////////////////////////////////////////////
+			/*
+			  if(pid == 1)
+			{
+			printf("pid: %d count_agents_total: %d count_agents_out: %d count_agents_int: %d \n", pid, count_agents_total, count_agents_out, count_agents_int);
+			display_data(h_agents_out_pos, h_agents_out_ids);
+			}
+			*/
+
+			memcpy(h_agents_out_pos + count_agents_out, h_agents_int_pos, (count_agents_int * sizeof(float4)) );
+			memcpy(h_agents_out_ids + count_agents_out, h_agents_int_ids, (count_agents_int * sizeof(float4)) );
+			count_agents_out += count_agents_int;
+
+
+			////////////////////////////////////////////////////////////////////////////////
+			//! Send data to the master
+			////////////////////////////////////////////////////////////////////////////////
+			num_bytes_agents_out = count_agents_out  * sizeof(float4);
+
+			//MPI_Send(&count_agents_out, 1, MPI_INT, server_process, DATA_COLLECT, MPI_COMM_WORLD);
+			//MPI_Send(h_agents_out_pos, num_bytes_agents_out, MPI_BYTE, server_process, DATA_COLLECT, MPI_COMM_WORLD);
+			//MPI_Send(h_agents_out_ids, num_bytes_agents_out, MPI_BYTE, server_process, DATA_COLLECT, MPI_COMM_WORLD);
+
+			MPI_Isend(&count_agents_out, 1, MPI_INT, server_process, DATA_COLLECT, MPI_COMM_WORLD, &send_request);
+			MPI_Isend(h_agents_out_pos, num_bytes_agents_out, MPI_BYTE, server_process, DATA_COLLECT, MPI_COMM_WORLD, &send_request);
+			MPI_Isend(h_agents_out_ids, num_bytes_agents_out, MPI_BYTE, server_process, DATA_COLLECT, MPI_COMM_WORLD, &send_request);
+
+
+			//Transfer to GPU exchange agents
+			if(count_agents_int)
+			{
+				//adding agents exchanged
+				num_bytes_agents_curr = count_agents_int * sizeof(float4);
+
+				err = cudaMemcpy(d_agents_pos + count_agents_total, h_agents_int_pos, num_bytes_agents_curr, cudaMemcpyHostToDevice);
+				if (err != cudaSuccess)
+				{
+					fprintf(stderr, "Failed to copy pointer from host to device 3 (error code %s)!\n", cudaGetErrorString(err));
+					exit(EXIT_FAILURE);
+				}
+
+				err = cudaMemcpy(d_agents_ids + count_agents_total, h_agents_int_ids, num_bytes_agents_curr, cudaMemcpyHostToDevice);
+				if (err != cudaSuccess)
+				{
+					fprintf(stderr, "Failed to copy pointer from host to device 4 (error code %s)!\n", cudaGetErrorString(err));
+					exit(EXIT_FAILURE);
+				}
+				count_agents_total += count_agents_int;
+
+				//reset exchange vectors
+				memset(h_agents_int_pos, 0, count_agents_int * sizeof(float4));
+				memset(h_agents_int_ids, 0, count_agents_int * sizeof(float4));
+
+			}
+
+			num_bytes_agents_curr = count_agents_total * sizeof(float4);
+
+			////////////////////////////////////////////////////////////////////////////////
+			//Reset initial conditions
+			////////////////////////////////////////////////////////////////////////////////
+			count_agents_out = 0;
+			count_agents_int = 0;
+
+			count_agents_left_out = 0;
+			count_agents_right_out = 0;
+			count_agents_low_out = 0;
+			count_agents_up_out = 0;
+			count_agents_right_in = 0;
+			count_agents_left_in = 0;
+			count_agents_low_in = 0;
+			count_agents_up_in = 0;
+
+			memset(h_agents_left_out_pos, 0, agents_total_buffer3 * sizeof(float4));
+			memset(h_agents_left_out_ids, 0, agents_total_buffer3 * sizeof(float4));
+			memset(h_agents_right_out_pos, 0, agents_total_buffer3 * sizeof(float4));
+			memset(h_agents_right_out_ids, 0, agents_total_buffer3 * sizeof(float4));
+			memset(h_agents_up_out_pos, 0, agents_total_buffer3 * sizeof(float4));
+			memset(h_agents_up_out_ids, 0, agents_total_buffer3 * sizeof(float4));
+			memset(h_agents_low_out_pos, 0, agents_total_buffer3 * sizeof(float4));
+			memset(h_agents_low_out_ids, 0, agents_total_buffer3 * sizeof(float4));
+
+			memset(h_agents_in_pos, 0, agents_total_buffer * sizeof(float4));
+			memset(h_agents_in_ids, 0, agents_total_buffer * sizeof(float4));
+
+			MPI_Wait(&send_request,&status);
+			memset(h_agents_out_pos, 0, agents_total_buffer * sizeof(float4));
+			memset(h_agents_out_ids, 0, agents_total_buffer * sizeof(float4));
+
+		}//End loop while
+
+		/* Release resources */
+		delete[] h_world;
+		delete[] h_agents_int_pos;
+		delete[] h_agents_int_ids;
+
+		delete[] h_agents_out_pos;
+		delete[] h_agents_out_ids;
+		delete[] h_agents_left_out_pos;
+		delete[] h_agents_left_out_ids;
+		delete[] h_agents_right_out_pos;
+		delete[] h_agents_right_out_ids;
+		delete[] h_agents_up_out_pos;
+		delete[] h_agents_up_out_ids;
+		delete[] h_agents_low_out_pos;
+		delete[] h_agents_low_out_ids;
+
+		delete[] h_agents_in_pos;
+		delete[] h_agents_in_ids;
+
+		cudaFree(d_world);
+		cudaFree(d_agents_pos);
+		cudaFree(d_agents_ids);
+#ifdef STENCIL
+		cudaFree(d_world_stencil_left_in);
+		cudaFree(d_world_stencil_right_in);
+		cudaFree(d_world_stencil_low_in);
+		cudaFree(d_world_stencil_up_in);
+		delete[] world_stencil_left_out;
+		delete[] world_stencil_left_in;
+		delete[] world_stencil_right_out;
+		delete[] world_stencil_right_in;
+		delete[] world_stencil_low_out;
+		delete[] world_stencil_low_in;
+		delete[] world_stencil_up_out;
+		delete[] world_stencil_up_in;
+
+#endif
+	}
+	catch(...){
+		printf("Exception Fail\n");
+		/* Release resources */
+		delete[] h_world;
+		delete[] h_agents_int_pos;
+		delete[] h_agents_int_ids;
+
+		delete[] h_agents_out_pos;
+		delete[] h_agents_out_ids;
+		delete[] h_agents_left_out_pos;
+		delete[] h_agents_left_out_ids;
+		delete[] h_agents_right_out_pos;
+		delete[] h_agents_right_out_ids;
+		delete[] h_agents_up_out_pos;
+		delete[] h_agents_up_out_ids;
+		delete[] h_agents_low_out_pos;
+		delete[] h_agents_low_out_ids;
+
+		delete[] h_agents_in_pos;
+		delete[] h_agents_in_ids;
+
+		cudaFree(d_world);
+		cudaFree(d_agents_pos);
+		cudaFree(d_agents_ids);
+#ifdef STENCIL
+		cudaFree(d_world_stencil_left_in);
+		cudaFree(d_world_stencil_right_in);
+		cudaFree(d_world_stencil_low_in);
+		cudaFree(d_world_stencil_up_in);
+		delete[] world_stencil_left_out;
+		delete[] world_stencil_left_in;
+		delete[] world_stencil_right_out;
+		delete[] world_stencil_right_in;
+		delete[] world_stencil_low_out;
+		delete[] world_stencil_low_in;
+		delete[] world_stencil_up_out;
+		delete[] world_stencil_up_in;
+#endif
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Compute offset between local and global coords
+//offset is the number to add to global coord to get local coord
+//example: global_coord(0,0) -> offset(5,5)
+//global_coord(512,512) -> offset(-507, 507) -> local_coord(5,5)
+////////////////////////////////////////////////////////////////////////////////
+void compute_offset(int num_comp_nodes, int world_width_node, int world_height_node, int pid)
+{
+	int lookupx_offset4[5];
+	lookupx_offset4[0] = 0;
+	lookupx_offset4[1] = 0;
+	lookupx_offset4[2] = 1;
+	lookupx_offset4[3] = 0;
+	lookupx_offset4[4] = 1;
+
+	int lookupy_offset4[5];
+	lookupy_offset4[0] = 0;
+	lookupy_offset4[1] = 0;
+	lookupy_offset4[2] = 0;
+	lookupy_offset4[3] = 1;
+	lookupy_offset4[4] = 1;
+
+	int lookupx_offset9[10];
+	lookupx_offset9[0] = 0;
+	lookupx_offset9[1] = 0;
+	lookupx_offset9[2] = 1;
+	lookupx_offset9[3] = 2;
+	lookupx_offset9[4] = 0;
+	lookupx_offset9[5] = 1;
+	lookupx_offset9[6] = 2;
+	lookupx_offset9[7] = 0;
+	lookupx_offset9[8] = 1;
+	lookupx_offset9[9] = 2;
+
+	int lookupy_offset9[10];
+	lookupy_offset9[0] = 0;
+	lookupy_offset9[1] = 0;
+	lookupy_offset9[2] = 0;
+	lookupy_offset9[3] = 0;
+	lookupy_offset9[4] = 1;
+	lookupy_offset9[5] = 1;
+	lookupy_offset9[6] = 1;
+	lookupy_offset9[7] = 2;
+	lookupy_offset9[8] = 2;
+	lookupy_offset9[9] = 2;
+
+	int lookupx_offset16[17];
+	lookupx_offset16[0] = 0;
+	lookupx_offset16[1] = 0;
+	lookupx_offset16[2] = 1;
+	lookupx_offset16[3] = 2;
+	lookupx_offset16[4] = 3;
+	lookupx_offset16[5] = 0;
+	lookupx_offset16[6] = 1;
+	lookupx_offset16[7] = 2;
+	lookupx_offset16[8] = 3;
+	lookupx_offset16[9] = 0;
+	lookupx_offset16[10] = 1;
+	lookupx_offset16[11] = 2;
+	lookupx_offset16[12] = 3;
+	lookupx_offset16[13] = 0;
+	lookupx_offset16[14] = 1;
+	lookupx_offset16[15] = 2;
+	lookupx_offset16[16] = 3;
+
+
+	int lookupy_offset16[17];
+	lookupy_offset16[0] = 0;
+	lookupy_offset16[1] = 0;
+	lookupy_offset16[2] = 0;
+	lookupy_offset16[3] = 0;
+	lookupy_offset16[4] = 0;
+	lookupy_offset16[5] = 1;
+	lookupy_offset16[6] = 1;
+	lookupy_offset16[7] = 1;
+	lookupy_offset16[8] = 1;
+	lookupy_offset16[9] = 2;
+	lookupy_offset16[10] = 2;
+	lookupy_offset16[11] = 2;
+	lookupy_offset16[12] = 2;
+	lookupy_offset16[13] = 3;
+	lookupy_offset16[14] = 3;
+	lookupy_offset16[15] = 3;
+	lookupy_offset16[16] = 3;
+
+	switch(num_comp_nodes)
+	{
+	case 4:
+		offset_wx = radio - (lookupx_offset4[pid] * world_width_node) ;
+		offset_wy = radio - (lookupy_offset4[pid] * world_height_node) ;
+		break;
+	case 9:
+		offset_wx = radio - (lookupx_offset9[pid] * world_width_node) ;
+		offset_wy = radio - (lookupy_offset9[pid] * world_height_node) ;
+		break;
+	case 16:
+		offset_wx = radio - (lookupx_offset16[pid] * world_width_node) ;
+		offset_wy = radio - (lookupy_offset16[pid] * world_height_node) ;
+		break;
+	}
+
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! define_border_status_ini
+////////////////////////////////////////////////////////////////////////////////
+
+void define_border_status_ini(float4 *h_agents_in_pos, float4 *h_agents_in_ids, int world_height_node, int world_width_node, int pid, int num_comp_nodes,
+		int2 *world_stencil_left_out, int2 *world_stencil_right_out, int2 *world_stencil_low_out, int2 *world_stencil_up_out,
+		int &count_agents_world_stencil_left_out, int &count_agents_world_stencil_right_out, int &count_agents_world_stencil_low_out,
+		int &count_agents_world_stencil_up_out, int count_agents_total, int offset_wx, int offset_wy)
+{
+	int x_limit_right_ini = world_width_node;
+	int x_limit_right_end = world_width_node + radio;
+	int x_limit_left_ini = radio;
+	int x_limit_left_end = radio * 2;
+	int y_limit_up_ini = world_height_node;
+	int y_limit_up_end = world_height_node + radio;
+	int y_limit_down_ini = radio;
+	int y_limit_down_end = radio * 2;
+	int world_width_node_r = world_width_node + (2 * radio);
+
+	//printf("pid: %d Inside border function\n", pid);
+	for(int idx=0; idx < count_agents_total; idx++)
+	{
+		//getting global coords
+		int id = h_agents_in_ids[idx].x;
+		int cx = h_agents_in_pos[idx].x;
+		int cy = h_agents_in_pos[idx].y;
+
+		if( id == pid && (cx > 0 && cy >0) )
+		{
+
+			//transform to local coords
+			int cx_local = cx + offset_wx ;
+			int cy_local = cy + offset_wy ;
+			int wcy_local = ( cy_local - 1 ) * world_width_node_r ;
+
+			if ( wcy_local < 0 )
+				wcy_local = 0 ;
+			int coord = wcy_local + cx_local;
+
+			if( cy_local > y_limit_down_ini && cy_local < y_limit_down_end )
+			{
+				world_stencil_low_out[count_agents_world_stencil_low_out].x = coord;
+				world_stencil_low_out[count_agents_world_stencil_low_out].y = id;
+				count_agents_world_stencil_low_out++;
+			}
+
+			if( cy_local > y_limit_up_ini && cy_local < y_limit_up_end )
+			{
+				world_stencil_up_out[count_agents_world_stencil_up_out].x = coord;
+				world_stencil_up_out[count_agents_world_stencil_up_out].y = id;
+				count_agents_world_stencil_up_out++;
+			}
+
+			if( cx_local > x_limit_left_ini && cx_local < x_limit_left_end )
+			{
+				world_stencil_left_out[count_agents_world_stencil_left_out].x = coord;
+				world_stencil_left_out[count_agents_world_stencil_left_out].y = id;
+				count_agents_world_stencil_left_out++;
+			}
+
+			if( cx_local > x_limit_right_ini && cx_local < x_limit_right_end  )
+			{
+				world_stencil_right_out[count_agents_world_stencil_right_out].x = coord;
+				world_stencil_right_out[count_agents_world_stencil_right_out].y = id;
+				count_agents_world_stencil_right_out++;
+			}
+		}
+	}
+}
+
+void reset_world_stencil(int2 *d_world_stencil_left_in, int2 *d_world_stencil_right_in, int2 *d_world_stencil_low_in, int2 *d_world_stencil_up_in,
+		int2 *world_stencil_left_in, int2 *world_stencil_right_in, int2 *world_stencil_low_in, int2 *world_stencil_up_in,
+		int2 *world_stencil_left_out, int2 *world_stencil_right_out, int2 *world_stencil_low_out, int2 *world_stencil_up_out,
+		int &count_agents_world_stencil_left_in, int &count_agents_world_stencil_right_in, int &count_agents_world_stencil_low_in, int &count_agents_world_stencil_up_in,
+		int &count_agents_world_stencil_left_out, int &count_agents_world_stencil_right_out, int &count_agents_world_stencil_low_out, int &count_agents_world_stencil_up_out)
+{
+	//reset world stencil vectors
+	cudaMemset(d_world_stencil_left_in, 0, count_agents_world_stencil_left_in * sizeof(float4));
+	cudaMemset(d_world_stencil_right_in, 0, count_agents_world_stencil_right_in * sizeof(float4));
+	cudaMemset(d_world_stencil_low_in, 0, count_agents_world_stencil_low_in * sizeof(float4));
+	cudaMemset(d_world_stencil_up_in, 0, count_agents_world_stencil_up_in * sizeof(float4));
+
+	memset(world_stencil_left_out, 0, count_agents_world_stencil_left_out * sizeof(int2));
+	memset(world_stencil_left_in, 0, count_agents_world_stencil_left_in * sizeof(int2));
+	memset(world_stencil_right_out, 0, count_agents_world_stencil_right_out * sizeof(int2));
+	memset(world_stencil_right_in, 0, count_agents_world_stencil_right_in * sizeof(int2));
+	memset(world_stencil_low_out, 0, count_agents_world_stencil_low_out * sizeof(int2));
+	memset(world_stencil_low_in, 0, count_agents_world_stencil_low_in * sizeof(int2));
+	memset(world_stencil_up_out, 0, count_agents_world_stencil_up_out * sizeof(int2));
+	memset(world_stencil_up_in, 0, count_agents_world_stencil_up_in * sizeof(int2));
+
+	//reset world stencil variables
+	count_agents_world_stencil_left_out = 0;
+	count_agents_world_stencil_left_in = 0;
+	count_agents_world_stencil_right_out = 0;
+	count_agents_world_stencil_right_in = 0;
+	count_agents_world_stencil_low_out = 0;
+	count_agents_world_stencil_low_in = 0;
+	count_agents_world_stencil_up_out = 0;
+	count_agents_world_stencil_up_in = 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Create VBO
+////////////////////////////////////////////////////////////////////////////////
+void createVBO(GLuint *vbo, struct cudaGraphicsResource **vbo_res,
+               unsigned int vbo_res_flags)
+{
+    assert(vbo);
+
+    // create buffer object
+    glGenBuffers(1, vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, *vbo);
+
+    // initialize buffer object
+    unsigned int size = agent_width * agent_height * 4 * sizeof(float);
+    glBufferData(GL_ARRAY_BUFFER, size, 0, GL_DYNAMIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    // register this buffer object with CUDA
+    checkCudaErrors(cudaGraphicsGLRegisterBuffer(vbo_res, *vbo, vbo_res_flags));
+
+    SDK_CHECK_ERROR_GL();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Delete VBO
+////////////////////////////////////////////////////////////////////////////////
+void deleteVBO(GLuint *vbo, struct cudaGraphicsResource *vbo_res)
+{
+    // unregister this buffer object with CUDA
+    cudaGraphicsUnregisterResource(vbo_res);
+
+    glBindBuffer(1, *vbo);
+    glDeleteBuffers(1, vbo);
+
+    *vbo = 0;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//! Timer Event
+////////////////////////////////////////////////////////////////////////////////
+void timerEvent(int value)
+{
+    glutPostRedisplay();
+    glutTimerFunc(REFRESH_DELAY, timerEvent,0);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Cleanup function
+////////////////////////////////////////////////////////////////////////////////
+void cleanup()
+{
+    sdkDeleteTimer(&timer);
+
+    if (vbo)
+    {
+        deleteVBO(&vbo, cuda_vbo_resource);
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Keyboard events handler
+////////////////////////////////////////////////////////////////////////////////
+void keyboard(unsigned char key, int /*x*/, int /*y*/)
+{
+    switch (key)
+    {
+        case (27) :
+            exit(EXIT_SUCCESS);
+            break;
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Mouse event handlers
+////////////////////////////////////////////////////////////////////////////////
+void mouse(int button, int state, int x, int y)
+{
+    if (state == GLUT_DOWN)
+    {
+        mouse_buttons |= 1<<button;
+    }
+    else if (state == GLUT_UP)
+    {
+        mouse_buttons = 0;
+    }
+
+    mouse_old_x = x;
+    mouse_old_y = y;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Motion
+////////////////////////////////////////////////////////////////////////////////
+void motion(int x, int y)
+{
+    float dx, dy;
+    dx = (float)(x - mouse_old_x);
+    dy = (float)(y - mouse_old_y);
+
+    if (mouse_buttons & 1)
+    {
+        rotate_x += dy * 0.2f;
+        rotate_y += dx * 0.2f;
+    }
+    else if (mouse_buttons & 4)
+    {
+        translate_z += dy * 0.01f;
+    }
+
+    mouse_old_x = x;
+    mouse_old_y = y;
+}
+
+/*************************************************************************/
+/** Main Function							**/
+/*************************************************************************/
+int main(int argc, char *argv[])
+{
+#ifdef	MINOTAURO
+	setvbuf (stdout , NULL , _IONBF , NULL );
+#endif
+
+	int pid = -1, np = -1;
+
+	MPI_Init(&argc, &argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &pid);
+	MPI_Comm_size(MPI_COMM_WORLD, &np);
+
+	if (argc == 3)
+	{
+		agent_width = atoi(argv[1]);
+		agent_height = atoi(argv[2]);
+	}
+	else if ( argc == 5)
+	{
+		agent_width = atoi(argv[1]);
+		agent_height = atoi(argv[2]);
+		world_width = atoi(argv[3]);
+		world_height = atoi(argv[4]);
+	}
+	else if(argc != 1)
+	{
+		printf("You can define two parameters: agents_width, agents_height\n Or four: agents_width, agents_height, world_width, world_height\n");
+		exit(EXIT_FAILURE);
+	}
+
+	agents_total = agent_width * agent_height;
+
+	if(pid == 0)
+		runSimulation(argc, argv);
+	else
+		compute_process();
+
+	MPI_Finalize();
+	return 0;
+}
+////////////////////////////////////////////////////////////////////////////////
+//! compute FPS
+////////////////////////////////////////////////////////////////////////////////
+void computeFPS()
+{
+    frameCount++;
+    fpsCount++;
+
+    if (fpsCount == fpsLimit)
+    {
+        avgFPS = 1.f / (sdkGetAverageTimerValue(&timer) / 1000.f);
+        fpsCount = 0;
+        fpsLimit = (int)MAX(avgFPS, 1.f);
+
+        sdkResetTimer(&timer);
+    }
+
+    char fps[256];
+    sprintf(fps, "MPI Cuda GL Interop (VBO): %3.1f fps (Max 100Hz)", avgFPS);
+    glutSetWindowTitle(fps);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Random number generator
+////////////////////////////////////////////////////////////////////////////////
+#define TOP	2147483647.		// 2^31 - 1
+float Ranf( float low, float high )
+{
+	float r = (float)rand( );
+	return(   low  +  r * ( high - low ) / (float)RAND_MAX   );
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//! Initialize agents with random positions
+////////////////////////////////////////////////////////////////////////////////
+void init_data(float4 *h_agents_in_pos, float4 *h_agents_in_ids, int world_width_node, int world_height_node, int num_comp_nodes, int pid, int agents_node,
+		int offset_wx, int offset_wy, int max_agents_node)
+{
+	const float PI = 3.1415926535;
+
+	const float XMIN = -offset_wx + radio * 8;
+	const float XMAX = -offset_wx + world_width_node - (radio *8);
+	const float YMIN = -offset_wy + radio * 8;
+	const float YMAX = -offset_wy + world_height_node - (radio * 8);
+
+	//printf("===?? pid:%d xmin: %f xmax: %f ymin: %f ymax: %f\n", pid, XMIN, XMAX, YMIN, YMAX);
+
+	const float THMIN =	0.0;
+	const float THMAX =	2*PI;
+	const float VMIN = 2.0;
+	const float VMAX = 3.0;
+
+	int offset_id = 0;
+
+	if (pid != 1)
+		offset_id = max_agents_node + (pid - 2) * agents_node ;
+
+	for(int i = 0;  i < agents_node;  i++)
+	{
+		h_agents_in_ids[i].x =  offset_id + i + 1;
+		h_agents_in_ids[i].y = -1;
+		h_agents_in_ids[i].w = -1;
+		h_agents_in_pos[i].x = Ranf( XMIN, XMAX );
+		h_agents_in_pos[i].y = Ranf( YMIN, YMAX );
+		h_agents_in_pos[i].z = Ranf( THMIN, THMAX );
+		h_agents_in_pos[i].w = Ranf( VMIN, VMAX );
+		h_agents_in_ids[i].z = pid;
+	}
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+//! Display Data (auxiliar for debug)
+////////////////////////////////////////////////////////////////////////////////
+void display_data(float4 *h_agents_in_pos, float4 *h_agents_in_ids)
+{
+    for( int i = 0; i < agents_total; i++ )
+	printf("id: %f pid: %f status: %f flagMisc: %f x: %f y: %f z: %f, w: %f \n", h_agents_in_ids[i].x, h_agents_in_ids[i].z, h_agents_in_ids[i].y,
+			h_agents_in_ids[i].w, h_agents_in_pos[i].x, h_agents_in_pos[i].y, h_agents_in_pos[i].z, h_agents_in_pos[i].w);
+}
+
+
+
+#endif

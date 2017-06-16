@@ -1,0 +1,262 @@
+# 
+# Wavefront material file
+# Converted by the DEEP Exploration  Deep Exploration 6.5 x64 6.5.0.9182
+# Right Hemisphere, LTD
+# http://www.righthemisphere.com/
+# 
+
+newmtl _ForestGreen_
+Ka 0 0 0
+Kd 0.13 0.55 0.13
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Gray_
+Ka 0 0 0
+Kd 0.5 0.5 0.5
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Concrete_Warm_
+Ka 0.858824 0.858824 0.858824
+Kd 0.690196 0.690196 0.690196
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd _Concrete_Warm_.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Concrete_walk_5
+Ka 0 0 0
+Kd 0.64 0.61 0.58
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Charcoal_
+Ka 0 0 0
+Kd 0.14 0.14 0.14
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Concrete_Warm_5
+Ka 0.870588 0.870588 0.870588
+Kd 0.870588 0.870588 0.870588
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd _Concrete_Warm_5.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Crimson_
+Ka 0 0 0
+Kd 0.86 0.08 0.24
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Wood_cherry_
+Ka 0.909804 0.909804 0.909804
+Kd 0.901961 0.901961 0.901961
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd _Wood_cherry_.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _White_
+Ka 0.839216 0.839216 0.839216
+Kd 0.768628 0.768628 0.768628
+Ks 0.45098 0.45098 0.45098
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Orange_
+Ka 0 0 0
+Kd 1 0.65 0
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Concrete_Warm_9
+Ka 0.658824 0.658824 0.658824
+Kd 0.670588 0.670588 0.670588
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd _Concrete_Warm_9.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Concrete_Warm_2
+Ka 0.878431 0.878431 0.878431
+Kd 0.788235 0.788235 0.788235
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd _Concrete_Warm_2.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Concrete_Warm_12
+Ka 0.890196 0.890196 0.890196
+Kd 0.909804 0.909804 0.909804
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd _Concrete_Warm_6.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Concrete_Warm_3
+Ka 0.819608 0.819608 0.819608
+Kd 0.811765 0.811765 0.811765
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd _Concrete_Warm_3.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Grass_
+Ka 0.811765 0.811765 0.811765
+Kd 0.780392 0.780392 0.780392
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd _Grass_.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Concrete_walk_4
+Ka 0.678431 0.678431 0.678431
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd _Concrete_walk_4.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 

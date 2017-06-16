@@ -1,0 +1,406 @@
+# 
+# Wavefront material file
+# Converted by the DEEP Exploration  Deep Exploration 6.1 x64 6.1.2.6638
+# Right Hemisphere, LTD
+# http://www.righthemisphere.com/
+# 
+
+newmtl UPStadium_Grass
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Grass.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_Grass2
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Grass2.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_Roof
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Roof.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_Texture1
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Texture1.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _GhostWhite_
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _CorrogateRust_
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd _CorrogateRust_.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_Brick
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Brick.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Silver_
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_Windows
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Windows.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_Metal
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Metal.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_Logo
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Logo.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _LightGray_
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl FrontColor
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_Metal1_
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Metal1_.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_End1
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_End1.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_Metal3_
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Metal3_.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_End3
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_End2.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_Metal2_
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Metal2_.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_Metal4_
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Metal4_.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_Seats_Red
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Seats_Red.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl UPStadium_Seats_Gray
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd UPStadium_Seats_Gray.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Brown_
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Charcoal_
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl _Yellow_
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Google_Earth_Snapshot1
+Ka 0 0 0
+Kd 0.639216 0.639216 0.639216
+Ks 0.33 0.33 0.33
+illum 2
+Ns 8
+map_Kd Google_Earth_Snapshot1.tga
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 

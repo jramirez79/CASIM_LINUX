@@ -1,0 +1,752 @@
+<?xml version="1.0" encoding="utf-8"?>
+<crowds xmlns="CASIM.xsd">
+
+  <!-- CLOTHING PROPS -->
+  <model_props type="clothing" name="clothing_male" sex="male">  
+
+    <!-- BEGIN ALL ASSETS -->
+    <prop type="atlas"    subtype="skin"            name="skin_atlas"                     file="assets/male/atlas/multi_skin.dds"                                         />
+    <prop type="atlas"    subtype="hair"            name="hair_atlas"                     file="assets/male/atlas/multi_hair.dds"                                         />
+    <prop type="atlas"    subtype="cap"             name="cap_atlas"                      file="assets/male/atlas/multi_cap.dds"                                          />
+    <prop type="atlas"    subtype="cap"             name="snow_cap_atlas"                 file="assets/male/atlas/multi_snow_cap.dds"                                     />
+
+    <prop type="wrinkles" subtype="legs"            name="pants_wrinkles"                 file="assets/male/foldings/legs/pants_wrinkles.tga"                             />
+    <prop type="wrinkles" subtype="legs"            name="bermudas_wrinkles"              file="assets/male/foldings/legs/bermudas_wrinkles.tga"                          />
+    <prop type="wrinkles" subtype="legs"            name="shorts_wrinkles"                file="assets/male/foldings/legs/shorts_wrinkles.tga"                            />
+    <prop type="wrinkles" subtype="torso"           name="jacket_closed_wrinkles"         file="assets/male/foldings/torso/jacket_closed_wrinkles.tga"                    />
+    <prop type="wrinkles" subtype="torso"           name="open_jacket_wrinkles"           file="assets/male/foldings/torso/open_jacket_wrinkles.tga"                      />
+    <prop type="wrinkles" subtype="torso"           name="shirt_long_sleeves_wrinkles"    file="assets/male/foldings/torso/shirt_long_sleeves_wrinkles.tga"               />
+    <prop type="wrinkles" subtype="torso"           name="shirt_wrinkles"                 file="assets/male/foldings/torso/shirt_wrinkles.tga"                            />
+    <prop type="wrinkles" subtype="torso"           name="sweat_sweater_hoodie_wrinkles"  file="assets/male/foldings/torso/sweat_sweater_hoodie_wrinkles.tga"             />
+    <prop type="wrinkles" subtype="torso"           name="sweat_sweater_zipper_wrinkles"  file="assets/male/foldings/torso/sweat_sweater_zipper_wrinkles.tga"             />
+    <prop type="wrinkles" subtype="torso"           name="t_shirt_long_sleeve_wrinkles"   file="assets/male/foldings/torso/t_shirt_long_sleeve.tga"                       />
+    <prop type="wrinkles" subtype="torso"           name="t_shirt_wrinkles"               file="assets/male/foldings/torso/t_shirt_wrinkles.tga"                          />
+    <prop type="wrinkles" subtype="torso"           name="top_A_wrinkles"                 file="assets/male/foldings/torso/top_A_wrinkles.tga"                            />
+    <prop type="wrinkles" subtype="torso"           name="top_B_wrinkles"                 file="assets/male/foldings/torso/top_B_wrinkles.tga"                            />
+    <prop type="wrinkles" subtype="torso"           name="tuck_in_t_shirt_wrinkles"       file="assets/male/foldings/torso/tuck_in_t_shirt.tga"                           />
+    <prop type="wrinkles" subtype="torso"           name="turtle_neck_wrinkles"           file="assets/male/foldings/torso/turtle_neck_wrinkles.tga"                      />
+    <prop type="wrinkles" subtype="torso_and_legs"  name="suit_wrinkles"                  file="assets/male/foldings/combined/suit_wrinkles.tga"                          />
+
+    <prop type="pattern"  subtype="legs"            name="pants_pattern"                  file="assets/male/patterns/legs/pants_pattern01.tga"                            />
+    <prop type="pattern"  subtype="legs"            name="bermudas_pattern"               file="assets/male/patterns/legs/bermudas_pattern01.tga"                         />
+    <prop type="pattern"  subtype="torso"           name="jacket_closed_pattern"          file="assets/male/patterns/torso/final_jacket_closed_pattern20_22.tga"          />
+    <prop type="pattern"  subtype="torso"           name="open_jacket_pattern"            file="assets/male/patterns/torso/final_open_jacket_pattern05_07.tga"            />
+    <prop type="pattern"  subtype="torso"           name="shirt_long_sleeves_pattern"     file="assets/male/patterns/torso/final_shirt_long_sleeves_pattern05_23.tga"     />
+    <prop type="pattern"  subtype="torso"           name="shirt_pattern"                  file="assets/male/patterns/torso/final_shirt_patternA_02.tga"                   />
+    <prop type="pattern"  subtype="torso"           name="sweat_sweater_hoodie_pattern"   file="assets/male/patterns/torso/final_sweat_sweater_hoodie_patternA_24.tga"    />
+    <prop type="pattern"  subtype="torso"           name="sweat_sweater_zipper_pattern"   file="assets/male/patterns/torso/final_sweat_sweater_zipper_patternA_06.tga"    />
+    <prop type="pattern"  subtype="torso"           name="t_shirt_long_sleeve_pattern"    file="assets/male/patterns/torso/final_t_shirt_long_sleeve_patternA_B.tga"      />
+    <prop type="pattern"  subtype="torso"           name="t_shirt_pattern"                file="assets/male/patterns/torso/final_t_shirt_patternA_05.tga"                 />
+    <prop type="pattern"  subtype="torso"           name="top_A_pattern"                  file="assets/male/patterns/torso/final_top_A_patternA_B.tga"                    />
+    <prop type="pattern"  subtype="torso"           name="top_B_pattern"                  file="assets/male/patterns/torso/final_top_B_patternA_05.tga"                   />
+    <prop type="pattern"  subtype="torso"           name="tuck_in_t_shirt_pattern"        file="assets/male/patterns/torso/final_tuck_in_t_shirt_patternA_B.tga"          />
+    <prop type="pattern"  subtype="torso"           name="turtle_neck_pattern"            file="assets/male/patterns/torso/final_turtle_neck_patternA_B.tga"              />
+    <prop type="pattern"  subtype="torso_and_legs"  name="suit_pattern"                   file="assets/male/patterns/combined/final_suit_pattern_A.tga"                   />
+    <!-- END ALL ASSETS -->
+
+    <!-- BEGIN ALL GEOMETRY -->
+    <prop type="head"     subtype="head"  name="bald"                   file="assets/male/parts/head/bald_high.obj">
+      <atlas    ref="skin_atlas" />
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="head"     subtype="head"  name="short_hair"             file="assets/male/parts/head/short_hair_high.obj">
+      <atlas    ref="skin_atlas" />
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="head"     subtype="head"  name="cap"                    file="assets/male/parts/head/cap_high.obj" >
+      <atlas    ref="skin_atlas" />
+      <atlas    ref="hair_atlas" />
+      <atlas    ref="cap_atlas" />
+    </prop>
+    <prop type="head"     subtype="head"  name="snow_cap"               file="assets/male/parts/head/snow_cap_high.obj" >
+      <atlas    ref="skin_atlas" />
+      <atlas    ref="hair_atlas" />
+      <atlas    ref="snow_cap_atlas" />
+    </prop>
+    <prop type="hair"     subtype="head"  name="long_hair"              file="assets/male/parts/head/long_hair.obj" >
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="torso"    subtype="torso" name="jacket_closed"          file="assets/male/parts/torso/jacket_closed_high.obj" >
+      <wrinkles ref="jacket_closed_wrinkles"/>
+      <pattern  ref="jacket_closed_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="open_jacket"            file="assets/male/parts/torso/open_jacket_high.obj" >
+      <wrinkles ref="open_jacket_wrinkles"/>
+      <pattern  ref="open_jacket_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="shirt"                  file="assets/male/parts/torso/shirt_high.obj" >
+      <wrinkles ref="shirt_wrinkles"/>
+      <pattern  ref="shirt_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="suit_up"                file="assets/male/parts/torso/suit_high.obj">
+      <wrinkles ref="suit_wrinkles"/>
+      <pattern  ref="suit_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="sweat_sweater_hoodie"   file="assets/male/parts/torso/sweat_sweater_hoodie_high.obj" >
+      <wrinkles ref="sweat_sweater_hoodie_wrinkles"/>
+      <pattern  ref="sweat_sweater_hoodie_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="sweat_sweater_zipper"   file="assets/male/parts/torso/sweat_sweater_zipper_high.obj" >
+      <wrinkles ref="sweat_sweater_zipper_wrinkles"/>
+      <pattern  ref="sweat_sweater_zipper_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="t_shirt"                file="assets/male/parts/torso/t_shirt_high.obj" >
+      <wrinkles ref="t_shirt_wrinkles"/>
+      <pattern  ref="t_shirt_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="t_shirt_long_sleeve"    file="assets/male/parts/torso/t_shirt_long_sleeve_high.obj" >
+      <wrinkles ref="t_shirt_long_sleeve_wrinkles"/>
+      <pattern  ref="t_shirt_long_sleeve_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="top_A"                  file="assets/male/parts/torso/top_high.obj" >
+      <wrinkles ref="top_A_wrinkles"/>
+      <pattern  ref="top_A_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="top_B"                  file="assets/male/parts/torso/top_high.obj" >
+      <wrinkles ref="top_B_wrinkles"/>
+      <pattern  ref="top_B_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="tuck_in_t_shirt"        file="assets/male/parts/torso/tuck_in_t_shirt_high.obj" >
+      <wrinkles ref="tuck_in_t_shirt_wrinkles"/>
+      <pattern  ref="tuck_in_t_shirt_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="turtle_neck"            file="assets/male/parts/torso/turtle_neck_high.obj">
+      <wrinkles ref="turtle_neck_wrinkles"/>
+      <pattern  ref="turtle_neck_pattern"/>
+    </prop>
+    <prop type="legs"     subtype="legs"  name="pants"                  file="assets/male/parts/legs/pants_high.obj">
+      <wrinkles ref="pants_wrinkles"/>
+      <pattern  ref="pants_pattern"/>
+    </prop>
+    <prop type="legs"     subtype="legs"  name="bermudas"               file="assets/male/parts/legs/bermudas_high.obj">
+      <wrinkles ref="bermudas_wrinkles"/>
+      <pattern  ref="bermudas_pattern"/>
+    </prop>
+    <prop type="legs"     subtype="legs"  name="bermudas_low"           file="assets/male/parts/legs/bermudas_low_high.obj">
+      <wrinkles ref="bermudas_wrinkles"/>
+      <pattern  ref="bermudas_pattern"/>
+    </prop>
+    <prop type="legs"     subtype="legs"  name="suit_down"              file="assets/male/parts/legs/suit_pants_high.obj">
+      <wrinkles ref="suit_wrinkles"/>
+      <pattern  ref="suit_pattern"/>
+    </prop>
+    <!-- END ALL GEOMETRY -->
+  </model_props>
+
+  <model_props type="clothing" name="clothing_female" sex="female">
+
+    <!-- BEGIN ALL ASSETS -->
+    <prop type="atlas"    subtype="skin"            name="skin_atlas"                     file="assets/female/atlas/multi_skin_sharpened.dds"                             />
+    <prop type="atlas"    subtype="hair"            name="hair_atlas"                     file="assets/female/atlas/multi_hair.dds"                                       />
+    
+    <prop type="wrinkles" subtype="legs"            name="pants_wrinkles"                 file="assets/female/foldings/legs/pants_wrinkles.tga"                           />
+    <prop type="wrinkles" subtype="legs"            name="fishers_wrinkles"               file="assets/female/foldings/legs/fishers_wrinkles.tga"                         />
+    <prop type="wrinkles" subtype="legs"            name="skirt_wrinkles"                 file="assets/female/foldings/legs/skirt_wrinkles.tga"                           />
+    <prop type="wrinkles" subtype="legs"            name="mini_skirt_wrinkles"            file="assets/female/foldings/legs/mini_skirt_wrinkles.tga"                      />
+    <prop type="wrinkles" subtype="torso"           name="jacket_wrinkles"                file="assets/female/foldings/torso/jacket_wrinkles.tga"                         />
+    <prop type="wrinkles" subtype="torso"           name="turtle_neck_wrinkles"           file="assets/female/foldings/torso/turtle_neck_wrinkles.tga"                    />
+    <prop type="wrinkles" subtype="torso"           name="blouse_wrinkles"                file="assets/female/foldings/torso/blouse_wrinkles.tga"                         />
+    <prop type="wrinkles" subtype="torso"           name="long_sleeve_blouse_wrinkles"    file="assets/female/foldings/torso/long_sleeve_blouse_wrinkles.tga"             />
+    <prop type="wrinkles" subtype="torso"           name="no_sleeves_blouse_wrinkles"     file="assets/female/foldings/torso/no_sleeves_blouse_wrinkles.tga"              />
+    <prop type="wrinkles" subtype="torso"           name="sweat_sweater_wrinkles"         file="assets/female/foldings/torso/sweat_sweater.tga"                           />
+    <prop type="wrinkles" subtype="torso"           name="t_shirt_A_wrinkles"             file="assets/female/foldings/torso/t_shirt_A_wrinkles.tga"                      />
+    <prop type="wrinkles" subtype="torso"           name="t_shirt_B_wrinkles"             file="assets/female/foldings/torso/t_shirt_B_wrinkles.tga"                      />
+    <prop type="wrinkles" subtype="torso"           name="t_shirt_C_wrinkles"             file="assets/female/foldings/torso/t_shirt_C_wrinkles.tga"                      />
+    <prop type="wrinkles" subtype="torso"           name="t_shirt_D_wrinkles"             file="assets/female/foldings/torso/t_shirt_D_wrinkles.tga"                      />
+    <prop type="wrinkles" subtype="torso"           name="t_shirt_E_wrinkles"             file="assets/female/foldings/torso/t_shirt_E_wrinkles.tga"                      />
+    <prop type="wrinkles" subtype="torso"           name="t_shirt_F_wrinkles"             file="assets/female/foldings/torso/t_shirt_F_wrinkles.tga"                      />
+    <prop type="wrinkles" subtype="torso_and_legs"  name="long_dress_A_wrinkles"          file="assets/female/foldings/combined/long_dress_A_wrinkles.tga"                />
+    <prop type="wrinkles" subtype="torso_and_legs"  name="long_dress_B_wrinkles"          file="assets/female/foldings/combined/long_dress_B_wrinkles.tga"                />
+    <prop type="wrinkles" subtype="torso_and_legs"  name="long_dress_C_wrinkles"          file="assets/female/foldings/combined/long_dress_C_wrinkles.tga"                />
+    <prop type="wrinkles" subtype="torso_and_legs"  name="suit_wrinkles"                  file="assets/female/foldings/combined/suit_wrinkles.tga"                        />
+    
+    <prop type="pattern"  subtype="legs"            name="pants_pattern"                  file="assets/female/patterns/legs/casual18_legs_pattern.tga"                    />
+    <prop type="pattern"  subtype="legs"            name="fishers_pattern"                file="assets/female/patterns/legs/casual13_legs_pattern.tga"                    />
+    <prop type="pattern"  subtype="torso"           name="jacket_pattern"                 file="assets/female/patterns/torso/final_jacket_pattern08_19.tga"               />
+    <prop type="pattern"  subtype="torso"           name="turtle_neck_pattern"            file="assets/female/patterns/torso/final_turtle_neck_patternA_B.tga"            />
+    <prop type="pattern"  subtype="torso"           name="blouse_pattern"                 file="assets/female/patterns/torso/final_blouse_pattern03_10.tga"               />
+    <prop type="pattern"  subtype="torso"           name="long_sleeve_blouse_pattern"     file="assets/female/patterns/torso/final_long_sleeve_blouse_pattern04_05.tga"   />
+    <prop type="pattern"  subtype="torso"           name="no_sleeves_blouse_pattern"      file="assets/female/patterns/torso/final_no_sleeves_blouse_patternA_B.tga"      />
+    <prop type="pattern"  subtype="torso"           name="sweat_sweater_pattern"          file="assets/female/patterns/torso/final_sweat_sweater_patternA_B.tga"          />
+    <prop type="pattern"  subtype="torso"           name="t_shirt_A_pattern"              file="assets/female/patterns/torso/final_t_shirt_A_pattern11_14.tga"            />
+    <prop type="pattern"  subtype="torso"           name="t_shirt_B_pattern"              file="assets/female/patterns/torso/final_t_shirt_B_patternA_B.tga"              />
+    <prop type="pattern"  subtype="torso"           name="t_shirt_C_pattern"              file="assets/female/patterns/torso/final_t_shirt_C_pattern17_18.tga"            />
+    <prop type="pattern"  subtype="torso"           name="t_shirt_D_pattern"              file="assets/female/patterns/torso/final_t_shirt_D_pattern01_10.tga"            />
+    <prop type="pattern"  subtype="torso"           name="t_shirt_E_pattern"              file="assets/female/patterns/torso/final_t_shirt_E_patternA_01.tga"             />
+    <prop type="pattern"  subtype="torso"           name="t_shirt_F_pattern"              file="assets/female/patterns/torso/final_t_shirt_F_patternA_B.tga"              />
+    <prop type="pattern"  subtype="torso_and_legs"  name="long_dress_A_pattern"           file="assets/female/patterns/combined/final_long_dress_pattern14_01_17.tga"     />
+    <prop type="pattern"  subtype="torso_and_legs"  name="long_dress_B_pattern"           file="assets/female/patterns/combined/final_long_dress_pattern14_01_17.tga"     />
+    <prop type="pattern"  subtype="torso_and_legs"  name="long_dress_C_pattern"           file="assets/female/patterns/combined/final_long_dress_pattern14_01_17.tga"     />
+    <prop type="pattern"  subtype="torso_and_legs"  name="suit_pattern"                   file="assets/female/patterns/combined/final_suit_patternA_09.tga"               />
+    <!-- END ALL ASSETS -->
+
+    <!-- BEGIN ALL GEOMETRY -->
+    <prop type="head"     subtype="head"  name="bald"               file="assets/female/parts/head/head_high.obj">
+      <atlas    ref="skin_atlas" />
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="head"     subtype="head"  name="short_hair"         file="assets/female/parts/head/short_hair_high.obj">
+      <atlas    ref="skin_atlas" />
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="hair"     subtype="head"  name="long_hair_a"        file="assets/female/parts/head/long_hair_a.obj" >
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="hair"     subtype="head"  name="long_hair_b"        file="assets/female/parts/head/long_hair_b.obj" >
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="hair"     subtype="head"  name="long_hair_c"        file="assets/female/parts/head/long_hair_c.obj" >
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="hair"     subtype="head"  name="long_hair_d"        file="assets/female/parts/head/long_hair_d.obj" >
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="hair"     subtype="head"  name="bun_a"              file="assets/female/parts/head/bun_a.obj" >
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="hair"     subtype="head"  name="bun_b"              file="assets/female/parts/head/bun_b.obj" >
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="hair"     subtype="head"  name="pony_tail_a"        file="assets/female/parts/head/pony_tail_a.obj" >
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="hair"     subtype="head"  name="pony_tail_b"        file="assets/female/parts/head/pony_tail_b.obj" >
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="hair"     subtype="head"  name="pony_tail_c"        file="assets/female/parts/head/pony_tail_c.obj" >
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="hair"     subtype="head"  name="pony_tail_d"        file="assets/female/parts/head/pony_tail_d.obj" >
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="torso"    subtype="torso" name="blouse"             file="assets/female/parts/torso/blouse_high.obj" >
+      <wrinkles ref="blouse_wrinkles"/>
+      <pattern  ref="blouse_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="jacket"             file="assets/female/parts/torso/jacket_high.obj">
+      <wrinkles ref="jacket_wrinkles"/>
+      <pattern  ref="jacket_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="long_sleeve_blouse" file="assets/female/parts/torso/long_sleeve_blouse_high.obj" >
+      <wrinkles ref="long_sleeve_blouse_wrinkles"/>
+      <pattern  ref="long_sleeve_blouse_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="no_sleeves_blouse"  file="assets/female/parts/torso/no_sleeves_blouse_high.obj" >
+      <wrinkles ref="no_sleeves_blouse_wrinkles"/>
+      <pattern  ref="no_sleeves_blouse_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="suit_up"            file="assets/female/parts/torso/suit_high.obj" >
+      <wrinkles ref="suit_wrinkles"/>
+      <pattern  ref="suit_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="sweat_sweater"      file="assets/female/parts/torso/sweat_sweater_high2.obj" >
+      <wrinkles ref="sweat_sweater_wrinkles"/>
+      <pattern  ref="sweat_sweater_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="t_shirt_A"          file="assets/female/parts/torso/t_shirt_high.obj" >
+      <wrinkles ref="t_shirt_A_wrinkles"/>
+      <pattern  ref="t_shirt_A_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="t_shirt_B"          file="assets/female/parts/torso/t_shirt_high.obj" >
+      <wrinkles ref="t_shirt_B_wrinkles"/>
+      <pattern  ref="t_shirt_B_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="t_shirt_C"          file="assets/female/parts/torso/t_shirt_high.obj" >
+      <wrinkles ref="t_shirt_C_wrinkles"/>
+      <pattern  ref="t_shirt_C_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="t_shirt_D"          file="assets/female/parts/torso/t_shirt_high.obj" >
+      <wrinkles ref="t_shirt_D_wrinkles"/>
+      <pattern  ref="t_shirt_D_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="t_shirt_E"          file="assets/female/parts/torso/t_shirt_high.obj" >
+      <wrinkles ref="t_shirt_E_wrinkles"/>
+      <pattern  ref="t_shirt_E_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="t_shirt_F"          file="assets/female/parts/torso/t_shirt_high.obj" >
+      <wrinkles ref="t_shirt_F_wrinkles"/>
+      <pattern  ref="t_shirt_F_pattern"/>
+    </prop>
+    <prop type="torso"    subtype="torso" name="turtle_neck"        file="assets/female/parts/torso/turtle_neck_sweater_high.obj">
+      <wrinkles ref="turtle_neck_wrinkles"/>
+      <pattern  ref="turtle_neck_pattern"/>
+    </prop>
+    <prop type="legs"     subtype="legs"  name="pants"              file="assets/female/parts/legs/casual_pants_high.obj">
+      <wrinkles ref="pants_wrinkles"/>
+      <pattern  ref="pants_pattern"/>
+    </prop>
+    <prop type="legs"     subtype="legs"  name="fishers"            file="assets/female/parts/legs/fisher_pants_high.obj">
+      <wrinkles ref="fishers_wrinkles"/>
+      <pattern  ref="fishers_pattern"/>
+    </prop>
+    <prop type="legs"     subtype="legs"  name="skirt"              file="assets/female/parts/legs/skirt_high.obj">
+      <wrinkles ref="skirt_wrinkles"/>
+      <pattern  ref="skirt_pattern"/>
+    </prop>
+    <prop type="legs"     subtype="legs"  name="mini_skirt"         file="assets/female/parts/legs/mini_skirt_high.obj">
+      <wrinkles ref="mini_skirt_wrinkles"/>
+      <pattern  ref="mini_skirt_pattern"/>
+    </prop>
+    <!-- END ALL GEOMETRY -->
+  </model_props>
+
+
+  <model_props type="clothing" name="clothing_lemming" sex="male">
+    <!-- BEGIN ALL ASSETS -->
+    <prop type="atlas"    subtype="skin"            name="skin_atlas"         file="assets/lemming/atlas/multi_skin.tga"                              />
+    <prop type="atlas"    subtype="hair"            name="hair_atlas"         file="assets/lemming/atlas/multi_hair.tga"                              />
+    <prop type="wrinkles" subtype="torso_and_legs"  name="wrinkles_1"         file="assets/lemming/foldings/combined/lemming_foldings.tga"            />
+    <prop type="pattern"  subtype="torso_and_legs"  name="pattern_1"          file="assets/lemming/patterns/combined/lemming_patternA.tga"            />
+    <!-- END ALL ASSETS -->
+    <!-- BEGIN ALL GEOMETRY -->
+    <prop type="head"     subtype="head"  name="head_1"             file="assets/lemming/parts/head/head_high.obj">
+      <atlas    ref="skin_atlas" />
+      <atlas    ref="hair_atlas" />
+    </prop>
+    <prop type="torso"    subtype="torso" name="torso_1"            file="assets/lemming/parts/torso/torso_high.obj">
+      <wrinkles ref="wrinkles_1"/>
+      <pattern  ref="pattern_1"/>
+    </prop>
+    <prop type="legs"     subtype="legs"  name="legs_1"             file="assets/lemming/parts/legs/legs_high.obj">
+      <wrinkles ref="wrinkles_1"/>
+      <pattern  ref="pattern_1"/>
+    </prop>
+    <!-- END ALL GEOMETRY -->
+  </model_props>
+
+
+
+  <!-- FACIAL PROPS -->
+  <model_props type="facial" name="facial_male" sex="male">
+    <prop type="facial_wrinkles"      subtype="face"  name="wrinkles"     file="assets/blank1024.tga"/>
+    <prop type="facial_eye_sockets"   subtype="face"  name="eye_sockets"  file="assets/male/facial/spots_eyespots_beard_moustache.tga"/>
+    <prop type="facial_spots"         subtype="face"  name="spots"        file="assets/male/facial/spots_eyespots_beard_moustache.tga"/>
+    <prop type="facial_beard"         subtype="face"  name="beard"        file="assets/male/facial/spots_eyespots_beard_moustache.tga"/>
+    <prop type="facial_moustache"     subtype="face"  name="moustache"    file="assets/male/facial/spots_eyespots_beard_moustache.tga"/>
+    <prop type="facial_makeup"        subtype="face"  name="makeup"       file="assets/blank1024.tga"/>
+  </model_props>
+
+  <model_props type="facial" name="facial_female" sex="female">
+    <prop type="facial_wrinkles"      subtype="face"  name="wrinkles"     file="assets/blank1024.tga"/>
+    <prop type="facial_eye_sockets"   subtype="face"  name="eye_sockets"  file="assets/female/facial/spots_eyespots_beard_moustache.tga"/>
+    <prop type="facial_spots"         subtype="face"  name="spots"        file="assets/female/facial/spots_eyespots_beard_moustache.tga"/>
+    <prop type="facial_beard"         subtype="face"  name="beard"        file="assets/female/facial/spots_eyespots_beard_moustache.tga"/>
+    <prop type="facial_moustache"     subtype="face"  name="moustache"    file="assets/female/facial/spots_eyespots_beard_moustache.tga"/>
+    <prop type="facial_makeup"        subtype="face"  name="makeup"       file="assets/blank1024.tga"/>
+  </model_props>
+
+  <model_props type="facial" name="facial_lemming" sex="male">
+    <prop type="facial_wrinkles"      subtype="face"  name="wrinkles"     file="assets/blank_small.dds"/>
+    <prop type="facial_eye_sockets"   subtype="face"  name="eye_sockets"  file="assets/blank_small.dds"/>
+    <prop type="facial_spots"         subtype="face"  name="spots"        file="assets/blank_small.dds"/>
+    <prop type="facial_beard"         subtype="face"  name="beard"        file="assets/blank_small.dds"/>
+    <prop type="facial_moustache"     subtype="face"  name="moustache"    file="assets/blank_small.dds"/>
+    <prop type="facial_makeup"        subtype="face"  name="makeup"       file="assets/blank_small.dds"/>
+  </model_props>
+
+  <!-- RIGGING PROPS -->
+  <model_props type="rigging" name="rigging_male" sex="male">
+    <prop type="rigging_zones"        subtype="rig"   name="zones"        file="assets/male/rigging/varied_man_zones.tga"/>
+    <prop type="rigging_weights"      subtype="rig"   name="weights"      file="assets/male/rigging/varied_man_weights.tga"/>
+    <prop type="rigging_displacement" subtype="rig"   name="displacement" file="assets/male/rigging/displacement.tga"/>
+  </model_props>
+
+  <model_props type="rigging" name="rigging_female" sex="female">
+    <prop type="rigging_zones"        subtype="rig"   name="zones"        file="assets/female/rigging/varied_woman_zones.tga"/>
+    <prop type="rigging_weights"      subtype="rig"   name="weights"      file="assets/female/rigging/varied_woman_weights.tga"/>
+    <prop type="rigging_displacement" subtype="rig"   name="displacement" file="assets/female/rigging/displacement.tga"/>
+  </model_props>
+
+  <model_props type="rigging" name="rigging_lemming" sex="male">
+    <prop type="rigging_zones"        subtype="rig"   name="zones"        file="assets/lemming/rigging/lemming_zones.tga"/>
+    <prop type="rigging_weights"      subtype="rig"   name="weights"      file="assets/lemming/rigging/lemming_weights.tga"/>
+    <prop type="rigging_displacement" subtype="rig"   name="displacement" file="assets/lemming/rigging/lemming_fat.tga"/>
+  </model_props>
+
+  <!-- GROUP 1 -->
+  <group name="male_winter_1" clothing_props="clothing_male" facial_props="facial_male" rigging_props="rigging_male" sex="male" type="human" >
+    <outfit       ref_head    ="short_hair" ref_hair        =""             ref_legs          ="pants"        ref_torso     ="open_jacket"  ref_palette   ="winter_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 2 -->
+  <group name="male_winter_2" clothing_props="clothing_male" facial_props="facial_male" rigging_props="rigging_male" sex="male" type="human" >
+    <outfit       ref_head    ="snow_cap"   ref_hair        =""             ref_legs          ="pants"        ref_torso     ="turtle_neck"  ref_palette   ="winter_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 3 -->
+  <group name="male_winter_3"   clothing_props="clothing_male" facial_props="facial_male" rigging_props="rigging_male" sex="male" type="human" >
+    <outfit       ref_head    ="bald"       ref_hair        =""             ref_legs          ="pants"        ref_torso     ="sweat_sweater_zipper" ref_palette   ="winter_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 4 -->
+  <group name="male_winter_4" clothing_props="clothing_male" facial_props="facial_male" rigging_props="rigging_male" sex="male" type="human" >
+    <outfit       ref_head    ="snow_cap"   ref_hair        =""             ref_legs          ="pants"        ref_torso     ="jacket_closed" ref_palette   ="winter_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 5 -->
+  <group name="male_winter_5" clothing_props="clothing_male" facial_props="facial_male" rigging_props="rigging_male" sex="male" type="human" >
+    <outfit       ref_head    ="short_hair" ref_hair        =""             ref_legs          ="pants"        ref_torso     ="sweat_sweater_hoodie" ref_palette   ="winter_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 6 -->
+  <group name="male_summer_1" clothing_props="clothing_male" facial_props="facial_male" rigging_props="rigging_male" sex="male" type="human" >
+    <outfit       ref_head    ="bald"       ref_hair        =""             ref_legs          ="bermudas_low" ref_torso     ="shirt"        ref_palette   ="winter_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 7 -->
+  <group name="male_summer_2" clothing_props="clothing_male" facial_props="facial_male" rigging_props="rigging_male" sex="male" type="human" >
+    <outfit       ref_head    ="cap"        ref_hair        =""             ref_legs          ="bermudas_low" ref_torso     ="t_shirt"  ref_palette   ="winter_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 8 -->
+  <group name="male_summer_3" clothing_props="clothing_male" facial_props="facial_male" rigging_props="rigging_male" sex="male" type="human" >
+    <outfit       ref_head    ="short_hair" ref_hair        =""             ref_legs          ="bermudas"     ref_torso     ="top_B"  ref_palette   ="winter_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 9 -->
+  <group name="male_summer_4" clothing_props="clothing_male" facial_props="facial_male" rigging_props="rigging_male" sex="male" type="human" >
+    <outfit       ref_head    ="short_hair" ref_hair        =""             ref_legs          ="pants"        ref_torso     ="top_A"  ref_palette   ="winter_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 10 -->
+  <group name="male_summer_5" clothing_props="clothing_male" facial_props="facial_male" rigging_props="rigging_male" sex="male" type="human" >
+    <outfit       ref_head    ="cap"        ref_hair        =""             ref_legs          ="bermudas"     ref_torso     ="tuck_in_t_shirt"  ref_palette   ="winter_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 11 -->
+  <group name="female_winter_1" clothing_props="clothing_female" facial_props="facial_female" rigging_props="rigging_female" sex="female" type="human" >
+    <outfit       ref_head    ="bald"       ref_hair        ="long_hair_a"  ref_legs          ="pants"        ref_torso     ="blouse"       ref_palette   ="summer_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 12 -->
+  <group name="female_winter_2" clothing_props="clothing_female" facial_props="facial_female" rigging_props="rigging_female" sex="female" type="human" >
+    <outfit       ref_head    ="bald"       ref_hair        ="long_hair_b"  ref_legs          ="pants"        ref_torso     ="jacket"       ref_palette   ="summer_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 13 -->
+  <group name="female_winter_3" clothing_props="clothing_female" facial_props="facial_female" rigging_props="rigging_female" sex="female" type="human" >
+    <outfit       ref_head    ="bald"       ref_hair        ="long_hair_c"  ref_legs          ="pants"        ref_torso     ="turtle_neck"  ref_palette   ="summer_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 14 -->
+  <group name="female_winter_4" clothing_props="clothing_female" facial_props="facial_female" rigging_props="rigging_female" sex="female" type="human" >
+    <outfit       ref_head    ="bald"       ref_hair        ="long_hair_d"  ref_legs          ="pants"        ref_torso     ="sweat_sweater"       ref_palette   ="summer_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 15 -->
+  <group name="female_winter_5" clothing_props="clothing_female" facial_props="facial_female" rigging_props="rigging_female" sex="female" type="human" >
+    <outfit       ref_head    ="short_hair" ref_hair        ="bun_a"        ref_legs          ="pants"        ref_torso     ="turtle_neck"  ref_palette   ="summer_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 16 -->
+  <group name="female_summer_1" clothing_props="clothing_female" facial_props="facial_female" rigging_props="rigging_female" sex="female" type="human" >
+    <outfit       ref_head    ="short_hair" ref_hair        ="bun_b"        ref_legs          ="fishers"      ref_torso     ="t_shirt_B"       ref_palette   ="summer_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 17 -->
+  <group name="female_summer_2" clothing_props="clothing_female" facial_props="facial_female" rigging_props="rigging_female" sex="female" type="human" >
+    <outfit       ref_head    ="short_hair" ref_hair        ="pony_tail_a"  ref_legs          ="fishers"      ref_torso     ="t_shirt_C"       ref_palette   ="summer_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 18 -->
+  <group name="female_summer_3" clothing_props="clothing_female" facial_props="facial_female" rigging_props="rigging_female" sex="female" type="human" >
+    <outfit       ref_head    ="short_hair" ref_hair        ="pony_tail_b"  ref_legs          ="fishers"      ref_torso     ="t_shirt_D"       ref_palette   ="summer_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 19 -->
+  <group name="female_summer_4" clothing_props="clothing_female" facial_props="facial_female" rigging_props="rigging_female" sex="female" type="human" >
+    <outfit       ref_head    ="short_hair" ref_hair        ="pony_tail_c"  ref_legs          ="fishers"      ref_torso     ="t_shirt_E"       ref_palette   ="summer_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 20 -->
+  <group name="female_summer_5" clothing_props="clothing_female" facial_props="facial_female" rigging_props="rigging_female" sex="female" type="human" >
+    <outfit       ref_head    ="short_hair" ref_hair        ="pony_tail_d"  ref_legs          ="fishers"      ref_torso     ="no_sleeves_blouse"       ref_palette   ="summer_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- GROUP 21 -->
+  <group name="lemming_1"       clothing_props="clothing_lemming" facial_props="facial_lemming" rigging_props="rigging_lemming" sex="male" type="lemming" >
+    <outfit       ref_head    ="head_1"     ref_hair        =""             ref_legs          ="legs_1"       ref_torso     ="torso_1"      ref_palette   ="summer_1"                         />
+    <face         ref_wrinkles="wrinkles"   ref_eye_sockets ="eye_sockets"  ref_spots         ="spots"        ref_beard     ="beard"        ref_moustache ="moustache"  ref_makeup  ="makeup" />
+    <rig          ref_zones   ="zones"      ref_weights     ="weights"      ref_displacement  ="displacement" ref_animation ="animation"                                                      />
+    <weight_size  fat         ="0.2"        average         ="0.4"          thin              ="0.1"          strong        ="0.3"                                                            />
+    <height_size  min         ="1.60"       max             ="1.85"                                                                                                                           />
+  </group>
+
+  <!-- CROWD_0: LEMMINGS! -->
+  <!--
+  <crowd name="crowd0" width="32" height="32">
+    <add_group ref="lemming_1"        percentage="100"  animation="assets/lemming/rigging/lemming_idle_mixamo001" animation_frames="96" animation_duration="60" />
+  </crowd>
+  -->
+  
+  <!-- CROWD_1: HUMANS -->
+  
+  
+  <!--crowd name="crowd1" width="32" height="32"-->	<!--1024-->
+    
+    <crowd name="crowd1" width="64" height="64">	<!--4096-->
+  
+    <!--
+    <add_group ref="female_summer_2"  percentage="25"  animation="assets/female/rigging/woman_walk_bvh002" animation_frames="149" animation_duration="60" />
+    -->
+
+    <!-- 1 GROUP MALE -->
+    <!--
+    <add_group ref="male_winter_1"    percentage="100"   animation="assets/male/rigging/man_walk_inplace"        animation_frames="31"  animation_duration="60" /> 
+    -->
+
+    <!-- 1 GROUP FEMALE -->
+    <!--
+    <add_group ref="female_summer_1"  percentage="100"  animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"  animation_duration="60" />
+    -->
+  
+    <!-- 2 GROUPS MIXED -->
+    <!--    
+    <add_group ref="female_summer_4"    percentage="50"  animation="assets/female/rigging/woman_ballet_bvh001"   animation_frames="620"  animation_duration="60" />
+    <add_group ref="male_winter_1"      percentage="50"  animation="assets/male/rigging/man_dance"               animation_frames="120"  animation_duration="60" />
+    -->
+
+    <!-- 2 GROUPS MIXED WALK-->
+    <!--
+    <add_group ref="female_summer_4"    percentage="50"  animation="assets/female/rigging/woman_walk_inplace"     animation_frames="31"  animation_duration="60" />
+    <add_group ref="male_winter_1"      percentage="50"  animation="assets/male/rigging/man_walk_inplace"         animation_frames="31"  animation_duration="60" />
+    -->
+
+    <!-- 4 GROUPS FEMALE -->
+    <!--
+    <add_group ref="female_summer_1"  percentage="25"  animation="assets/female/rigging/woman_samba_mixamo001"  animation_frames="573"  animation_duration="60" />
+    <add_group ref="female_summer_2"  percentage="25"  animation="assets/female/rigging/woman_walk_inplace"     animation_frames="31"   animation_duration="60" />
+    <add_group ref="female_summer_3"  percentage="25"  animation="assets/female/rigging/woman_gangnam_style"    animation_frames="297"  animation_duration="60" />
+    <add_group ref="female_summer_4"  percentage="25"  animation="assets/female/rigging/woman_ballet_bvh001"    animation_frames="620"  animation_duration="60" />
+    -->
+    
+    <!-- 4 GROUPS MIXED WALK -->
+    
+    <add_group ref="female_summer_1"    percentage="25"  animation="assets/female/rigging/woman_walk_inplace"     animation_frames="31"  animation_duration="60" />
+    <add_group ref="male_summer_1"      percentage="25"  animation="assets/male/rigging/man_walk_inplace"         animation_frames="31"  animation_duration="60" />
+    <add_group ref="female_winter_1"    percentage="25"  animation="assets/female/rigging/woman_walk_inplace"     animation_frames="31"  animation_duration="60" />
+    <add_group ref="male_winter_1"      percentage="25"  animation="assets/male/rigging/man_walk_inplace"         animation_frames="31"  animation_duration="60" />
+    
+
+    <!-- 8 GROUPS MIXED -->
+    <!--
+    <add_group ref="female_summer_1"    percentage="15"  animation="assets/female/rigging/woman_samba_mixamo001" animation_frames="573"  animation_duration="60" />
+    <add_group ref="female_summer_2"    percentage="10"  animation="assets/female/rigging/woman_walk_inplace"    animation_frames="31"   animation_duration="60" />
+    <add_group ref="female_summer_3"    percentage="15"  animation="assets/female/rigging/woman_gangnam_style"   animation_frames="297"  animation_duration="60" />    
+    <add_group ref="female_summer_4"    percentage="10"  animation="assets/female/rigging/woman_ballet_bvh001"   animation_frames="620"  animation_duration="60" />
+    <add_group ref="male_winter_1"      percentage="15"  animation="assets/male/rigging/man_dance"               animation_frames="120"  animation_duration="60" />
+    <add_group ref="male_winter_2"      percentage="10"  animation="assets/male/rigging/man_gangnam_style"       animation_frames="297"  animation_duration="60" />
+    <add_group ref="male_suit_1"        percentage="15"  animation="assets/male/rigging/man_walk_inplace"        animation_frames="31"   animation_duration="60" />
+    <add_group ref="male_winter_3"      percentage="10"  animation="assets/male/rigging/man_claphands"           animation_frames="96"   animation_duration="60" />
+    -->
+
+    <!--
+    <add_group ref="male_winter_1"      percentage="5"   animation="assets/male/rigging/man_dance"               animation_frames="120"  animation_duration="60" />
+    <add_group ref="male_winter_2"      percentage="5"   animation="assets/male/rigging/man_gangnam_style"       animation_frames="297"  animation_duration="60" />
+    <add_group ref="male_suit_1"        percentage="5"   animation="assets/male/rigging/man_walk_inplace"        animation_frames="31"   animation_duration="60" />
+    <add_group ref="male_winter_3"      percentage="5"   animation="assets/male/rigging/man_claphands"           animation_frames="96"   animation_duration="60" />
+    <add_group ref="male_winter_4"      percentage="5"   animation="assets/male/rigging/man_idle1"               animation_frames="320"  animation_duration="60" />   
+    <add_group ref="male_winter_5"      percentage="5"   animation="assets/male/rigging/man_idle2"               animation_frames="320"  animation_duration="60" />
+    <add_group ref="male_winter_6"      percentage="5"   animation="assets/male/rigging/man_lookaround"          animation_frames="160"  animation_duration="60" />
+    <add_group ref="male_winter_7"      percentage="5"   animation="assets/male/rigging/man_gangnam_style"       animation_frames="297"  animation_duration="60" />
+    <add_group ref="male_winter_8"      percentage="5"   animation="assets/male/rigging/man_dance"               animation_frames="120"  animation_duration="60" />
+    <add_group ref="male_winter_9"      percentage="5"   animation="assets/male/rigging/man_gangnam_style"       animation_frames="297"  animation_duration="60" />
+    -->
+
+    <!-- 8 GROUPS MIXED WALK -->
+    <!--
+    <add_group ref="female_summer_1"    percentage="12.5"  animation="assets/female/rigging/woman_walk_inplace"     animation_frames="31"  animation_duration="60" />
+    <add_group ref="male_summer_1"      percentage="12.5"  animation="assets/male/rigging/man_walk_inplace"         animation_frames="31"  animation_duration="60" />
+    <add_group ref="female_winter_1"    percentage="12.5"  animation="assets/female/rigging/woman_walk_inplace"     animation_frames="31"  animation_duration="60" />
+    <add_group ref="male_winter_1"      percentage="12.5"  animation="assets/male/rigging/man_walk_inplace"         animation_frames="31"  animation_duration="60" />
+    <add_group ref="female_summer_2"    percentage="12.5"  animation="assets/female/rigging/woman_walk_inplace"     animation_frames="31"  animation_duration="60" />
+    <add_group ref="male_summer_2"      percentage="12.5"  animation="assets/male/rigging/man_walk_inplace"         animation_frames="31"  animation_duration="60" />
+    <add_group ref="female_winter_2"    percentage="12.5"  animation="assets/female/rigging/woman_walk_inplace"     animation_frames="31"  animation_duration="60" />
+    <add_group ref="male_winter_2"      percentage="12.5"  animation="assets/male/rigging/man_walk_inplace"         animation_frames="31"  animation_duration="60" />
+    -->
+
+    <!-- 16 GROUPS MIXED WALK -->
+    <!--
+    <add_group ref="male_winter_1"      percentage="8"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_winter_2"      percentage="6"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_winter_3"      percentage="6"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_winter_4"      percentage="6"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_summer_1"      percentage="6"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_summer_2"      percentage="6"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_summer_3"      percentage="6"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_summer_4"      percentage="6"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+
+    <add_group ref="female_winter_1"    percentage="8"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_winter_2"    percentage="6"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_winter_3"    percentage="6"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_winter_4"    percentage="6"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_summer_1"    percentage="6"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_summer_2"    percentage="6"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_summer_3"    percentage="6"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_summer_4"    percentage="6"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    -->
+
+    <!-- 20 GROUPS MIXED WALK -->
+    <!--
+    <add_group ref="male_winter_1"      percentage="5"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_winter_2"      percentage="5"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_winter_3"      percentage="5"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_winter_4"      percentage="5"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_winter_5"      percentage="5"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_summer_1"      percentage="5"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_summer_2"      percentage="5"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_summer_3"      percentage="5"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_summer_4"      percentage="5"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_summer_5"      percentage="5"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+
+    <add_group ref="female_summer_1"    percentage="5"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_summer_2"    percentage="5"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_summer_3"    percentage="5"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_summer_4"    percentage="5"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_summer_5"    percentage="5"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_winter_1"    percentage="5"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_winter_2"    percentage="5"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_winter_3"    percentage="5"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_winter_4"    percentage="5"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_winter_5"    percentage="5"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+	-->
+
+    <!-- 10 GROUPS MIXED WINTER -->
+    <!--
+    <add_group ref="male_winter_1"      percentage="10"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_winter_2"      percentage="10"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_winter_3"      percentage="10"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_winter_4"      percentage="10"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_winter_5"      percentage="10"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+
+    <add_group ref="female_winter_1"    percentage="10"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_winter_2"    percentage="10"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_winter_3"    percentage="10"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_winter_4"    percentage="10"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_winter_5"    percentage="10"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    -->
+    
+    <!-- 10 GROUPS MIXED SUMMER -->
+    <!--
+    <add_group ref="male_summer_1"      percentage="10"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_summer_2"      percentage="10"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_summer_3"      percentage="10"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_summer_4"      percentage="10"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+    <add_group ref="male_summer_5"      percentage="10"   animation="assets/male/rigging/man_walk_inplace"      animation_frames="31"    animation_duration="60" />
+
+    <add_group ref="female_summer_1"    percentage="10"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_summer_2"    percentage="10"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_summer_3"    percentage="10"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_summer_4"    percentage="10"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    <add_group ref="female_summer_5"    percentage="10"   animation="assets/female/rigging/woman_walk_inplace"  animation_frames="31"    animation_duration="60" />
+    -->
+
+
+    <!-- 20 GROUPS MIXED -->
+    <!--
+    <add_group ref="female_summer_1"    percentage="5"  animation="assets/female/rigging/woman_samba_mixamo001" animation_frames="573"  animation_duration="60" />
+    <add_group ref="female_summer_2"    percentage="5"  animation="assets/female/rigging/woman_samba_mixamo001" animation_frames="573"  animation_duration="60" />
+    <add_group ref="female_summer_3"    percentage="5"  animation="assets/female/rigging/woman_gangnam_style"   animation_frames="297"  animation_duration="60" />
+    <add_group ref="female_summer_4"    percentage="5"  animation="assets/female/rigging/woman_ballet_bvh001"   animation_frames="620"  animation_duration="60" />
+    <add_group ref="female_summer_5"    percentage="5"  animation="assets/female/rigging/woman_samba_mixamo001" animation_frames="573"  animation_duration="60" />
+    <add_group ref="female_winter_1"    percentage="5"  animation="assets/female/rigging/woman_samba_mixamo001" animation_frames="573"  animation_duration="60" />
+    <add_group ref="female_winter_2"    percentage="5"  animation="assets/female/rigging/woman_gangnam_style"   animation_frames="297"  animation_duration="60" />
+    <add_group ref="female_winter_3"    percentage="5"  animation="assets/female/rigging/woman_ballet_bvh001"   animation_frames="620"  animation_duration="60" />
+    <add_group ref="female_winter_4"    percentage="5"  animation="assets/female/rigging/woman_samba_mixamo001" animation_frames="573"  animation_duration="60" />
+    <add_group ref="female_winter_5"    percentage="5"  animation="assets/female/rigging/woman_samba_mixamo001" animation_frames="573"  animation_duration="60" />
+
+    <add_group ref="male_summer_1"      percentage="5"  animation="assets/male/rigging/man_dance"               animation_frames="120"  animation_duration="60" />
+    <add_group ref="male_summer_2"      percentage="5"  animation="assets/male/rigging/man_gangnam_style"       animation_frames="297"  animation_duration="60" />
+    <add_group ref="male_summer_3"      percentage="5"  animation="assets/male/rigging/man_cheer"               animation_frames="220"  animation_duration="60" />
+    <add_group ref="male_summer_4"      percentage="5"  animation="assets/male/rigging/man_claphands"           animation_frames="96"   animation_duration="60" />
+    <add_group ref="male_summer_5"      percentage="5"  animation="assets/male/rigging/man_dance"               animation_frames="120"  animation_duration="60" />
+    <add_group ref="male_winter_1"      percentage="5"  animation="assets/male/rigging/man_gangnam_style"       animation_frames="297"  animation_duration="60" />
+    <add_group ref="male_winter_2"      percentage="5"  animation="assets/male/rigging/man_cheer"               animation_frames="220"  animation_duration="60" />
+    <add_group ref="male_winter_3"      percentage="5"  animation="assets/male/rigging/man_claphands"           animation_frames="96"   animation_duration="60" />
+    <add_group ref="male_winter_4"      percentage="5"  animation="assets/male/rigging/man_dance"               animation_frames="120"  animation_duration="60" />
+    <add_group ref="male_winter_5"      percentage="5"  animation="assets/male/rigging/man_gangnam_style"       animation_frames="297"  animation_duration="60" />
+    -->
+
+  </crowd>
+
+</crowds>

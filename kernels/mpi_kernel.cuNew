@@ -1,0 +1,407 @@
+#include <stdio.h>
+
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, char *file, int line, bool abort=true)
+{
+   if (code != cudaSuccess)
+   {
+      fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+      if (abort) exit(code);
+   }
+}
+
+__device__ int d_behavior(unsigned int x, unsigned int y, float4 *d_agents, float4 *d_ids, int *d_world, int world_width, int world_height, int agent_width,
+							int offset_wx, int offset_wy, int world_width_node, int world_height_node, int ax, int ay, float angle, int aw, int radio, int pid)
+{
+	float PI = 3.14159265358979323846;
+	int limit = 4 * radio;
+	int number_directions = 8;
+    //int points[number_directions]
+	int points[8];
+	//int nl[number_directions*radio]
+	int nl[ 40 ];
+	int i, j, direction, k=0;
+	int coord;
+	float cx, cy, wcy, ai;
+	float cx_new, wcy_new;
+	int coord_new, p=0, mx=0, nx=0, ny=0;
+	int world_width_node_r = world_width_node + (2 * radio);
+
+    float cos_angle = cosf(angle);
+    float sin_angle = sinf(angle);
+
+    //if next cell is near of the limit of the world the angle change 90 degrees
+	int ccx = ax + ( cos_angle * 6 * aw) ;
+	int ccy = ay + ( sin_angle * 6 * aw) ;
+	if( (ccx < limit || ccx > world_width - limit) || (ccy < limit || ccy > world_height - limit) )
+	{
+		angle += PI/2;
+		d_agents[y*agent_width+x].z = angle;
+	}
+
+	//transform to local coords
+	int cx_old = ax + offset_wx;
+	int cy_old = ay + offset_wy;
+	int wcy_old = ( cy_old - 1 ) * world_width_node_r ;
+	if ( wcy_old < 0 )
+		wcy_old = 0 ;
+	//get the original coord to make available
+	int coord_old =  wcy_old + cx_old;
+	coord_new = coord_old;
+
+	//Evaluate only the original direction if
+	if (cx_old < (radio * 2) or cy_old < (radio * 2) or cx_old > (world_width_node - radio) or cy_old > (world_height_node - radio) )
+		number_directions = 1;
+
+	//Listing cells in the neighborhood (raytrace over a radio)
+	ai = angle;
+	for(k = 0; k < number_directions; k++ )
+	{
+		for(j = 1; j <= radio ; j++)
+		{
+			cx = cx_old + ( cosf(ai) * j);
+			cy = cy_old + ( sinf(ai) * j);
+			wcy = ( cy - 1 ) * world_width_node_r ;
+			coord =  roundf(wcy + cx);
+			nl[(j - 1) + (k * radio)] = d_world[coord];
+		}
+		ai += PI/4;
+	}
+
+	//Evaluating the path
+	for(direction = 0; direction < number_directions; direction++)
+	{
+		p = 0;
+		for(i=0; i < radio; i++)
+		{
+			if(nl[i + (direction*radio)] == 0)
+				p++;
+			else
+				break;
+		}
+		points[direction] = p;
+	}
+
+	//Choosing the best path
+	mx = points[0];
+	direction = 0;
+	for(i=1;i<number_directions;i++)
+	{
+		if(mx < points[i])
+		{
+			mx = points[i];
+			direction = i;
+		}
+	}
+
+	if( mx) //if there is at least one position available the agent moves
+	{
+		//Updating values
+		angle += direction * PI/4;
+		//Asign new global coords
+		nx = roundf( ax + ( cosf(angle) * aw) );
+		ny = roundf( ay + ( sinf(angle) * aw) );
+		d_agents[y*agent_width+x].x = nx;
+		d_agents[y*agent_width+x].y = ny;
+
+		cx_new = nx + offset_wx;
+		wcy_new = ( ny + offset_wy - 1 ) * world_width_node_r ;
+		if ( wcy_new < 0 )
+			wcy_new = 0 ;
+		coord_new =  roundf(wcy_new + cx_new);
+		//set as busy cell
+		d_world[coord_new] = d_ids[y*agent_width+x].x ;
+		//release old cell
+		d_world[coord_old] = 0;
+	}
+	return coord_new;
+}
+
+__device__ void d_interchange(unsigned int x, unsigned int y, float4 *agent, float4 *ids, int *d_world, int agent_width, int world_height_node,
+		int world_width_node, int num_comp_nodes, int coord)
+{
+   int lookup_node4[2][2];
+   lookup_node4[0][0] = 1;
+   lookup_node4[0][1] = 2;
+   lookup_node4[1][0] = 3;
+   lookup_node4[1][1] = 4;
+
+   int lookup_node16[4][4];
+   lookup_node16[0][0] = 1;
+   lookup_node16[0][1] = 2;
+   lookup_node16[0][2] = 3;
+   lookup_node16[0][3] = 4;
+   lookup_node16[1][0] = 5;
+   lookup_node16[1][1] = 6;
+   lookup_node16[1][2] = 7;
+   lookup_node16[1][3] = 8;
+   lookup_node16[2][0] = 9;
+   lookup_node16[2][1] = 10;
+   lookup_node16[2][2] = 11;
+   lookup_node16[2][3] = 12;
+   lookup_node16[3][0] = 13;
+   lookup_node16[3][1] = 14;
+   lookup_node16[3][2] = 15;
+   lookup_node16[3][3] = 16;
+
+   int lookup_node9[3][3];
+   lookup_node9[0][0] = 1;
+   lookup_node9[0][1] = 2;
+   lookup_node9[0][2] = 3;
+   lookup_node9[1][0] = 4;
+   lookup_node9[1][1] = 5;
+   lookup_node9[1][2] = 6;
+   lookup_node9[2][0] = 7;
+   lookup_node9[2][1] = 8;
+   lookup_node9[2][2] = 9;
+
+	if (num_comp_nodes == 4)
+	{
+		ids[y*agent_width+x].z = lookup_node4[(int)floor(agent[y*agent_width+x].y/world_height_node) ][(int)floor( agent[y*agent_width+x].x/world_width_node)];
+		d_world[coord] = 0 ;
+	}
+	else if (num_comp_nodes == 9)
+	{
+		ids[y*agent_width+x].z = lookup_node9[(int)agent[y*agent_width+x].y/world_height_node][(int)agent[y*agent_width+x].x/world_width_node];
+		d_world[coord] = 0 ;
+	}
+	else if (num_comp_nodes == 16)
+	{
+		ids[y*agent_width+x].z = lookup_node16[(int)agent[y*agent_width+x].y/world_height_node][(int)agent[y*agent_width+x].x/world_width_node];
+		d_world[coord] = 0 ;
+	}
+}
+
+/***
+__device__ bool d_border(int x, int y, float4 *agent, int world_width, int agent_width, int world_height_node,
+		int world_width_node, int pid, int num_comp_nodes)
+{
+	int border_width = 5;
+	int nodes_per_row = sqrtf(num_comp_nodes);
+	int x_limit_right = (( ( (pid - 1) % nodes_per_row ) + 1 ) * world_width_node);
+	int x_limit_left = (( (pid - 1) % nodes_per_row )  * world_width_node);
+	int num_row = (pid - 1) / nodes_per_row;
+	int y_limit_up = (( num_row + 1 ) * world_height_node);
+	int y_limit_down = (num_row  * world_height_node);
+
+	//getting coords
+	int cx = round( agent[y*agent_width+x].x ) ;
+	int cy = round( agent[y*agent_width+x].y ) ;
+
+
+	if( cx < x_limit_left + border_width )
+	{
+		return true;
+	}
+
+	if( cx > x_limit_right - border_width )
+	{
+		return true;
+	}
+
+	if( cy < y_limit_down + border_width )
+	{
+		return true;
+	}
+
+	if( cy > y_limit_up - border_width )
+	{
+		return true;
+	}
+
+	return false;
+}
+***/
+
+///////////////////////////////////////////////////////////////////////////////
+//! Kernel to modify border agents positions
+//! @param data  data in global memory
+///////////////////////////////////////////////////////////////////////////////
+__global__ void update_positions(float4 *agent, float4 *ids, int *d_world, int world_width, int world_height, int world_height_node,
+		int world_width_node, int pid, int num_comp_nodes, int count_agents_total, int agent_width, int offset_wx, int offset_wy, int radio)
+{
+   unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;
+   unsigned int y = blockIdx.y*blockDim.y + threadIdx.y;
+   int coord=0;
+   int ax;
+   int ay;
+   float angle;
+   int aw;
+
+   if ( y * agent_width + x < count_agents_total ) //verify bounds of the array
+   {
+	   if(ids[y*agent_width+x].z == pid) //check if agent is active
+	   {
+		   ids[y*agent_width+x].w += 1; //iterations counter
+
+		    ax = agent[y*agent_width+x].x;
+		    ay = agent[y*agent_width+x].y;
+		    angle = agent[y*agent_width+x].z;
+		    aw = agent[y*agent_width+x].w;
+
+		    coord = d_behavior(x, y, agent, ids, d_world, world_width, world_height, agent_width, offset_wx, offset_wy, world_width_node, world_height_node,
+				   ax, ay, angle, aw, radio, pid);
+		    d_interchange(x, y, agent, ids, d_world, agent_width, world_height_node, world_width_node, num_comp_nodes, coord);
+	   }
+	   else
+		   ids[y*agent_width+x].z = -1;
+   }
+}
+
+// CUDA computation on each node
+extern "C" void launch_update_positions(float4 *d_agents_pos, float4 *d_agents_ids, int *d_world, int world_width, int world_height, int world_height_node,
+		int world_width_node, int pid, int num_comp_nodes, int count_agents_total, int offset_wx, int offset_wy, int radio)
+{
+    // execute the kernel
+    int block_width = 8;
+    int block_height = 8;
+    dim3 block(block_width, block_height, 1);
+    int agent_width = sqrt(count_agents_total);
+    dim3 grid((agent_width / block.x) + 1, (agent_width / block.y) + 1, 1);
+    int grid_width = grid.x * block.x;
+
+    //printf("grid.x: %d\n", grid.x);
+    update_positions<<< grid, block>>>(d_agents_pos, d_agents_ids, d_world, world_width, world_height, world_height_node, world_width_node,
+    		pid, num_comp_nodes, count_agents_total, grid_width, offset_wx, offset_wy, radio);
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
+}
+
+__global__ void update_right_ghost(int *d_world, int2 *d_world_stencil_right_in, int world_width_node_r, int world_width_node, int agent_width,
+		int count_agents_total)
+{
+   unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;
+   unsigned int y = blockIdx.y*blockDim.y + threadIdx.y;
+
+   if ( y * agent_width + x < count_agents_total ) //verify bounds of the array
+   {
+	//map neighbor coords
+	int coord_n = d_world_stencil_right_in[y*agent_width+x].x;
+	int y_n = coord_n / ( world_width_node_r ) ;
+	int x_n = coord_n % ( world_width_node_r ) ;
+	int coord_i = ( y_n  * world_width_node_r ) + (world_width_node + x_n);
+
+	d_world[coord_i] = d_world_stencil_right_in[y*agent_width+x].y;
+   }
+}
+
+extern "C" void launch_update_right_ghost(int *d_world, int2 *d_world_stencil_right_in, int count_agents_world_stencil_right_in, int world_width_node_r,
+		int world_width_node)
+{
+	if (count_agents_world_stencil_right_in)
+	{
+	    int block_width = 8;
+	    int block_height = 8;
+	    dim3 block(block_width, block_height, 1);
+	    int agent_width = sqrt(count_agents_world_stencil_right_in);
+	    dim3 grid((agent_width / block.x) + 1, (agent_width / block.y) + 1, 1);
+
+		update_right_ghost<<<grid, block>>>(d_world, d_world_stencil_right_in, world_width_node_r, world_width_node, agent_width, count_agents_world_stencil_right_in);
+	}
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
+}
+
+
+__global__ void update_left_ghost(int *d_world, int2 *d_world_stencil_left_in, int world_width_node_r, int world_width_node, int agent_width,
+		int count_agents_total)
+{
+   unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;
+   unsigned int y = blockIdx.y*blockDim.y + threadIdx.y;
+
+   if ( y * agent_width + x < count_agents_total ) //verify bounds of the array
+   {
+	//map neighbor coords
+	int coord_n = d_world_stencil_left_in[y*agent_width+x].x;
+	int y_n = coord_n / ( world_width_node_r ) ;
+	int x_n = coord_n % ( world_width_node_r ) ;
+	int coord_i = ( y_n * world_width_node_r ) + (x_n - world_width_node);
+
+	d_world[coord_i] = d_world_stencil_left_in[y*agent_width+x].y;
+   }
+}
+
+extern "C" void launch_update_left_ghost(int *d_world, int2 *d_world_stencil_left_in, int count_agents_world_stencil_left_in, int world_width_node_r,
+		int world_width_node)
+{
+	if (count_agents_world_stencil_left_in)
+	{
+	    int block_width = 8;
+	    int block_height = 8;
+	    dim3 block(block_width, block_height, 1);
+	    int agent_width = sqrt(count_agents_world_stencil_left_in);
+	    dim3 grid((agent_width / block.x) + 1, (agent_width / block.y) + 1, 1);
+
+		update_left_ghost<<<grid, block>>>(d_world, d_world_stencil_left_in, world_width_node_r, world_width_node, agent_width, count_agents_world_stencil_left_in);
+	}
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
+
+}
+
+__global__ void update_up_ghost(int *d_world, int2 *d_world_stencil_up_in, int world_width_node_r, int world_height_node, int agent_width, int count_agents_total)
+{
+   unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;
+   unsigned int y = blockIdx.y*blockDim.y + threadIdx.y;
+
+   if ( y * agent_width + x < count_agents_total ) //verify bounds of the array
+   {
+	//map neighbor coords
+	int coord_n = d_world_stencil_up_in[y*agent_width+x].x;
+	int y_n = ( coord_n / world_width_node_r ) + world_height_node;
+	int x_n = coord_n % world_width_node_r  ;
+	int coord_i = ( y_n * world_width_node_r ) + x_n;
+
+	d_world[coord_i] = d_world_stencil_up_in[y*agent_width+x].y;
+   }
+}
+
+extern "C" void launch_update_up_ghost(int *d_world, int2 *d_world_stencil_up_in, int count_agents_world_stencil_up_in, int world_width_node_r, int world_height_node)
+{
+	if (count_agents_world_stencil_up_in)
+	{
+	    int block_width = 8;
+	    int block_height = 8;
+	    dim3 block(block_width, block_height, 1);
+	    int agent_width = sqrt(count_agents_world_stencil_up_in);
+	    dim3 grid((agent_width / block.x) + 1, (agent_width / block.y) + 1, 1);
+
+		update_up_ghost<<<grid, block>>>(d_world, d_world_stencil_up_in, world_width_node_r, world_height_node, agent_width, count_agents_world_stencil_up_in);
+	}
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
+
+}
+
+__global__ void update_low_ghost(int *d_world, int2 *d_world_stencil_low_in, int world_width_node_r, int world_height_node, int agent_width, int count_agents_total)
+{
+   unsigned int x = blockIdx.x*blockDim.x + threadIdx.x;
+   unsigned int y = blockIdx.y*blockDim.y + threadIdx.y;
+
+   if ( y * agent_width + x < count_agents_total ) //verify bounds of the array
+   {
+	//map neighbor coords
+	int coord_n = d_world_stencil_low_in[y*agent_width+x].x;
+	int y_n = (  coord_n / world_width_node_r   ) - world_height_node;
+	int x_n = coord_n % world_width_node_r ;
+	int coord_i = ( y_n * world_width_node_r ) + x_n;
+
+	d_world[coord_i] = d_world_stencil_low_in[y*agent_width+x].y;
+   }
+}
+
+extern "C" void launch_update_low_ghost(int *d_world, int2 *d_world_stencil_low_in, int count_agents_world_stencil_low_in, int world_width_node_r, int world_height_node)
+{
+	if (count_agents_world_stencil_low_in)
+	{
+	    int block_width = 8;
+	    int block_height = 8;
+	    dim3 block(block_width, block_height, 1);
+	    int agent_width = sqrt(count_agents_world_stencil_low_in);
+	    dim3 grid((agent_width / block.x) + 1, (agent_width / block.y) + 1, 1);
+
+		update_low_ghost<<<grid, block>>>(d_world, d_world_stencil_low_in, world_width_node_r, world_height_node, agent_width, count_agents_world_stencil_low_in);
+	}
+	gpuErrchk( cudaPeekAtLastError() );
+	gpuErrchk( cudaDeviceSynchronize() );
+}

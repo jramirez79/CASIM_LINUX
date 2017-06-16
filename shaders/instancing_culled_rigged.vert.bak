@@ -1,0 +1,290 @@
+#version 130
+#extension GL_ARB_texture_rectangle : require
+#extension GL_ARB_uniform_buffer_object: enable
+#extension GL_EXT_gpu_shader4: enable
+#extension GL_ARB_draw_instanced: enable
+
+#define NUM_LIGHTS		2
+#define DEG2RAD			0.01745329251994329576
+#define PI				3.14159265358979323846*0.5
+#define USING_IDS
+//=======================================================================================
+attribute vec2 texCoord0;
+attribute vec3 normalV;
+varying vec3 lightVec[ NUM_LIGHTS ];
+varying vec3 N;
+varying vec3 E;
+varying vec3 ti;
+varying vec4 normalColor;
+
+uniform sampler2D weightsTexture;								// Indicates how much to bend at joints.
+uniform sampler2D zonesTexture;									// To know which bone we are processing.
+uniform sampler2D displacementTexture;
+
+uniform mat4 matPelvis;		
+uniform mat4 matSpine;		
+uniform mat4 matSpine1;		
+uniform mat4 matSpine2;		
+uniform mat4 matNeck;		
+uniform mat4 matHead;		
+uniform mat4 matL_Clavicle;	
+uniform mat4 matL_UpperArm;	
+uniform mat4 matL_Forearm;	
+uniform mat4 matL_Hand;		
+uniform mat4 matL_Finger0;	
+uniform mat4 matL_Finger01;	
+uniform mat4 matL_Finger1;	
+uniform mat4 matL_Finger11;	
+uniform mat4 matL_Finger2;	
+uniform mat4 matL_Finger21;	
+uniform mat4 matL_Finger3;	
+uniform mat4 matL_Finger31;	
+uniform mat4 matL_Finger4;	
+uniform mat4 matL_Finger41;	
+uniform mat4 matR_Clavicle;	
+uniform mat4 matR_UpperArm;	
+uniform mat4 matR_Forearm;	
+uniform mat4 matR_Hand;		
+uniform mat4 matR_Finger0;	
+uniform mat4 matR_Finger01;	
+uniform mat4 matR_Finger1;	
+uniform mat4 matR_Finger11;	
+uniform mat4 matR_Finger2;	
+uniform mat4 matR_Finger21;	
+uniform mat4 matR_Finger3;	
+uniform mat4 matR_Finger31;	
+uniform mat4 matR_Finger4;	
+uniform mat4 matR_Finger41;	
+uniform mat4 matL_Thigh;	
+uniform mat4 matL_Calf;		
+uniform mat4 matL_Foot;		
+uniform mat4 matL_Toe0;		
+uniform mat4 matR_Thigh;	
+uniform mat4 matR_Calf;		
+uniform mat4 matR_Foot;		
+uniform mat4 matR_Toe0;		
+#ifdef USING_IDS
+	uniform sampler2DRect	posTexture;
+	uniform int			AGENTS_NPOT;
+#endif
+uniform samplerBuffer posTextureBuffer;							// when #def USING_ID_BUFFER, this texture stores IDs not agents' positions
+uniform mat4 ViewMat4x4;
+
+//=======================================================================================
+// Explicit bilinear texture lookup to circumvent bad hardware precision.
+// The extra arguments specify the dimension of the texture. (GLSL 1.30
+// introduced textureSize() to get that information from the sampler.)
+// 'dims' is the width and height of the texture, 'one' is 1.0/dims.
+// (Precomputing 'one' saves two divisions for each lookup.)
+vec4 texture2D_bilinear(sampler2D tex, vec2 st, vec2 dims, vec2 one) {
+	vec2 uv = st * dims;
+	vec2 uv00 = floor(uv - vec2(0.5)); // Lower left corner of lower left texel
+	vec2 uvlerp = uv - uv00 - vec2(0.5); // Texel-local lerp blends [0,1]
+	vec2 st00 = (uv00 + vec2(0.5)) * one;
+	vec4 texel00 = texture2D(tex, st00);
+	vec4 texel10 = texture2D(tex, st00 + vec2(one.x, 0.0));
+	vec4 texel01 = texture2D(tex, st00 + vec2(0.0, one.y));
+	vec4 texel11 = texture2D(tex, st00 + one);
+	vec4 texel0 = mix(texel00, texel01, uvlerp.y); 
+	vec4 texel1 = mix(texel10, texel11, uvlerp.y); 
+	return mix(texel0, texel1, uvlerp.x);
+}
+//=======================================================================================
+
+mat4 rotationToMatrix( vec2 rotation )							// Classic 3D Rotation Matrix.
+{
+	mat4 cenital	= mat4( 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 );
+	mat4 azimuth	= mat4( 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 );
+	float sinC		= sin( rotation.x );
+	float cosC		= cos( rotation.x );
+	float sinA		= sin( rotation.y );
+	float cosA		= cos( rotation.y );
+	cenital[1][1]	=  cosC;
+	cenital[1][2]	=  sinC;
+	cenital[2][1]	= -sinC;
+	cenital[2][2]	=  cosC;
+	azimuth[0][0]	=  cosA;
+	azimuth[0][2]	= -sinA;
+	azimuth[2][0]	=  sinA;
+	azimuth[2][2]	=  cosA;
+	return cenital * azimuth;
+}
+
+//=======================================================================================
+
+void main( void )
+{	vec4 inputv;
+	gl_TexCoord[0].st		= texCoord0.xy;
+#ifdef USING_IDS
+	int ss,tt;
+	vec4 ids				= texelFetchBuffer(posTextureBuffer, gl_InstanceID);
+	ss						= int(ids.x) / AGENTS_NPOT;
+	tt						= int(ids.x) - ss * AGENTS_NPOT;
+	ti						= vec3(float(ss),float(tt),0.0);
+	inputv					= texture2DRect (posTexture, ti.st);							// Get current instance 'global' position given the character Id
+	vec4 position			= vec4( inputv.x, 0.0, inputv.z, 1.0 );							// Y is fixed to -30.0 for now...
+	vec2 rotation			= vec2( 0.0, inputv.y );										// Model orientation.
+#else
+	float ti1				= float( gl_InstanceID % 4 );
+	inputv					= texelFetchBuffer( posTextureBuffer, gl_InstanceID );			// Get current instance 'global' position.
+	ti						= vec3( ti1 );
+	vec4 position			= vec4( inputv.x, 0.0, inputv.y, 1.0 );							// Y is fixed to -30.0 for now...
+	vec2 rotation			= vec2( 0.0, inputv.z );										// Model orientation.
+#endif
+	float f = ids.x;
+	
+	vec3 weightVal			= texture2D( weightsTexture, gl_TexCoord[0].st ).rgb;			// Weight in [0,1].
+	
+	vec2 disp				= 1.0 - texture2D_bilinear( displacementTexture, gl_TexCoord[0].st, 
+													vec2(2048, 2048), vec2(0.00048828125, 0.00048828125)).ra;
+	//vec2 disp				= texture2D( displacementTexture, gl_TexCoord[0].st ).ra;
+	disp.r					= 2.0*disp.r - 1.0;													// Displacement in [-1,1].														 
+	vec3 zoneVal			= texture2D( zonesTexture,   gl_TexCoord[0].st ).rgb;			// Current zone.
+	
+	int zone1				= int( trunc( zoneVal.r * 256.0 ) );
+
+	mat4 matID				= rotationToMatrix (vec2 (-0.004,0.0)); 
+	
+	
+	mat4 transMat4x4		= rotationToMatrix( rotation );									// Orient whole model's instance.
+	transMat4x4[ 3 ][ 0 ]	= position.x;													// Locate whole model's instance.
+	transMat4x4[ 3 ][ 1 ]	= position.y;													// Locate whole model's instance.
+	transMat4x4[ 3  ][ 2 ]	= position.z;													// Locate whole model's instance.
+	mat4 modelViewMat		= ViewMat4x4 * transMat4x4;										// Create model's View Matrix.		
+
+	vec4 tempva				= vec4( 0.0, 0.0, 0.0, 0.0 );
+
+	float rem_rgb			= (1.0 - (weightVal.r + weightVal.g + weightVal.b))/3.0;
+	weightVal.r += rem_rgb;
+	weightVal.g += rem_rgb; 
+	weightVal.b += rem_rgb;
+
+	vec4 vertex = gl_Vertex;
+	vec4 normal = vec4(normalV,1.0);
+	vertex.xyz = vertex.xyz + (normalV.xyz*disp.r*4.0); // the four value came from Maya's transfer maps -> Displacement map -> Maximum Value
+	vertex.w = 1.0;
+
+	if(zone1==1){
+		tempva = (weightVal.r * matPelvis + weightVal.g * matSpine + weightVal.b * matL_Thigh)  * vertex;
+	}
+	else if(zone1==2){
+		tempva = (weightVal.r * matPelvis + weightVal.g * matSpine + weightVal.b * matR_Thigh) * vertex;
+	}
+	else if(zone1==3){
+		tempva = (weightVal.g * matSpine + weightVal.r * matPelvis + weightVal.b * matSpine1) * vertex;
+	}
+	else if(zone1==4){
+		tempva = (weightVal.b * matSpine1 + weightVal.g * matSpine + weightVal.r * matSpine2) * vertex;
+	}
+	else if(zone1==5){
+		tempva = (weightVal.r * matSpine2 +weightVal.b * matSpine1 + weightVal.g * matNeck) * vertex;
+	}
+	else if(zone1==6){
+		tempva = (weightVal.g * matNeck + weightVal.r * matSpine2 + weightVal.b * matL_Clavicle) * vertex;
+	}
+	else if(zone1==7){
+		tempva = (weightVal.g * matNeck + weightVal.r * matSpine2 + weightVal.b * matR_Clavicle) * vertex;
+	}
+	else if(zone1==8){
+		
+		tempva = (weightVal.b * (matHead * matID) + weightVal.g * matNeck + weightVal.r * matSpine2)* vertex ;
+	}
+	else if(zone1==9){
+		tempva = (weightVal.b * matL_Clavicle + weightVal.g * matNeck + weightVal.r * matSpine2) * vertex;
+	}
+	else if(zone1==10){
+		tempva = (weightVal.r * (matL_UpperArm) + weightVal.b * matL_Clavicle + weightVal.g * matNeck) * vertex;
+	}
+	else if(zone1==11){
+		tempva = (weightVal.g * (matL_Forearm ) + weightVal.r * (matL_UpperArm ) + weightVal.b * matL_Hand) * vertex;
+	}
+	else if(zone1==12){
+		tempva = (weightVal.b * matL_Hand + weightVal.g * (matL_Forearm ) + weightVal.r * matL_Finger0) * vertex;
+	}
+	else if(zone1==13){
+		tempva = (weightVal.b * matL_Hand + weightVal.g * (matL_Forearm ) + weightVal.r * matL_Finger3) * vertex;
+	}
+	else if(zone1==14){
+		tempva = (weightVal.b * matL_Hand + weightVal.g * (matL_Forearm ) + weightVal.r * matL_Finger4) * vertex;
+	}
+	else if(zone1==15){
+		tempva = (weightVal.r * matL_Finger0 + weightVal.b * matL_Hand + weightVal.g * matL_Finger01) * vertex;
+	}
+	else if(zone1==16){
+		tempva = (weightVal.r * matL_Finger1 + weightVal.b * matL_Hand + weightVal.g * matL_Finger11) * vertex;
+	}
+	else if(zone1==17){
+		tempva = (weightVal.r * matL_Finger2 + weightVal.b * matL_Hand + weightVal.g * matL_Finger21) * vertex;
+	}
+	else if(zone1==18){
+		tempva = (weightVal.r * matL_Finger3 + weightVal.b * matL_Hand + weightVal.g * matL_Finger31) * vertex;
+	}
+	else if(zone1==19){
+		tempva = (weightVal.r * matL_Finger4 + weightVal.b * matL_Hand + weightVal.g * matL_Finger41) * vertex;
+	}
+	else if(zone1==20){
+		tempva = (weightVal.b * matR_Clavicle + weightVal.g * matNeck + weightVal.r * matSpine2) * vertex;
+	}
+	else if(zone1==21){
+		tempva = (weightVal.r * matR_UpperArm + weightVal.b * matR_Clavicle + weightVal.g * matNeck) * vertex;
+	}
+	else if(zone1==22){
+		tempva = (weightVal.g * matR_Forearm + weightVal.r * matR_UpperArm + weightVal.b * matR_Hand) * vertex;
+	}
+	else if(zone1==23){
+		tempva = (weightVal.b * matR_Hand + weightVal.g * matR_Forearm + weightVal.r * matR_Finger0) * vertex;
+	}
+	else if(zone1==24){
+		tempva = (weightVal.b * matR_Hand + weightVal.g * matR_Forearm + weightVal.r * matR_Finger3) * vertex;
+	}
+	else if(zone1==25){
+		tempva = (weightVal.b * matR_Hand + weightVal.g * matR_Forearm + weightVal.r * matR_Finger4) * vertex;
+	}
+	else if(zone1==26){
+		tempva = (weightVal.r * matR_Finger0 + weightVal.b * matR_Hand + weightVal.g * matR_Finger01) * vertex;
+	}
+	else if(zone1==27){
+		tempva = (weightVal.r * matR_Finger1 + weightVal.b * matR_Hand + weightVal.g * matR_Finger11) * vertex;
+	}
+	else if(zone1==28){
+		tempva = (weightVal.r * matR_Finger2 + weightVal.b * matR_Hand + weightVal.g * matR_Finger21) * vertex;
+	}
+	else if(zone1==29){
+		tempva = (weightVal.r * matR_Finger3 + weightVal.b * matR_Hand + weightVal.g * matR_Finger31) * vertex;
+	}
+	else if(zone1==30){
+		tempva = (weightVal.r * matR_Finger4 + weightVal.b * matR_Hand + weightVal.g * matR_Finger41) * vertex;
+	}
+	else if(zone1==31){
+		tempva = (weightVal.b * matL_Thigh + weightVal.g * matSpine + weightVal.r * matPelvis) * vertex;
+	}
+	else if(zone1==32){
+		tempva = (weightVal.r * matL_Calf + weightVal.b * matL_Thigh + weightVal.g * matL_Foot) * vertex;
+	}
+	else if(zone1==33){
+		tempva = (weightVal.g * matL_Foot + weightVal.r * matL_Calf + weightVal.b * matL_Toe0) * vertex;
+	}
+	else if(zone1==34){
+		tempva = (weightVal.b * matR_Thigh + weightVal.g * matSpine + weightVal.r * matPelvis) * vertex;
+	}
+	else if(zone1==35){
+		tempva = (weightVal.r * matR_Calf + weightVal.b * matR_Thigh + weightVal.g * matR_Foot) * vertex;
+	}
+	else if(zone1==36){
+		tempva = (weightVal.g * matR_Foot + weightVal.r * matR_Calf + weightVal.b * matR_Toe0) * vertex;
+	}
+
+	vec4 P					= (modelViewMat * tempva);
+	P						= P/P.w;
+
+	gl_Position				= gl_ProjectionMatrix * P;
+	N						= normalize(gl_NormalMatrix * normalV);
+	E						= P.rgb/P.a;
+
+	normalColor				= vec4(disp.r, disp.r, disp.r,1.0);
+
+	for( int l = 0; l < NUM_LIGHTS; l++ )
+	{
+		lightVec[l]			= normalize( gl_LightSource[l].position.xyz - P.xyz );
+	}
+}

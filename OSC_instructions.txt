@@ -1,0 +1,69 @@
+
+At client (rendering) machine
+
+a) HDF5 Client
+
+1. Open cMacros.h file under "header" directory and uncomment OSC_PATHS macro. Make shure MPI_PATHS,MPI_PATHS_ON_NODES, CUDA_PATHS and MDP_SQUARE are commented.
+
+2. Open cPacketListener.h file under "header" directory, specify NUM_CHARACTERS, NUM_CHARACTERS_LIMIT and PACKET_SIZE macros accordingly to 
+the HDF5 server machine / Minotauro, i.e. its values must be the same.
+
+3. Open cPacketListener.cpp file under "source" directory, if you are using the HDF5 server uncomment the proper lines in  cPacketListener::ProcessMessage method.
+
+4. Open osc_bezier_paths_kernel.cu file under "kernels" directory, if you are using the HDF5 server, uncomment HDF5Server macro; 
+if you are using Minotauro, comment HDF5Server macro.
+
+
+b) Minotauro Client
+
+1. Using "reverse tunneling", you link 7001 port of the client to 7001 of Minotauro via TCP
+	
+	ssh -R 7001:localhost:7001 user@mt1.bsc.es
+	
+
+2. Using socat (must be installed previously) redirect port 7001 tcp to 7000 port udp (7000 port udp MUST be open to internet)
+   
+   sudo socat TCP-LISTEN:7001,fork UDP4-SENDTO:localhost:7000
+   
+   
+3. Open cPacketListener.cpp file under "source" directory, if you are using the Minotauro server comment/uncomment the proper lines in  cPacketListener::ProcessMessage method.
+
+4. Open osc_bezier_paths_kernel.cu file under "kernels" directory, if you are using the HDF5 server, uncomment HDF5Server macro; 
+if you are using Minotauro, comment HDF5Server macro.
+
+   
+
+  
+ 
+
+At server machine
+
+a) HDF5 parser machine
+
+1. From the OSCServerH5 project open main.cpp, got to ADDRESS macro, make sure de IP Adress is the client's IP Address.
+
+2. The NUM_CHARACTERS macro depend on the number of agents the HDF5 stored. 
+Due OSC protocol features, NUM_CHARACTERS_LIMIT  always must be 256, and PACKET_SIZE must be equal to  NUM_CHARACTERS_LIMIT*3, then you must not change these values.
+
+3. You can change the HDF5 file by modifying the path at the main method from main.cpp file. Make sure it exist its corresponding agents-0.abm file.
+
+4. Do not forget connect tha network cable to the client machine. You need to specify a network connection, 
+where client machine IP address is  192.168.0.2 and server machine is 192.168.0.1, in this case the PORT is 7000. If the client machine is visible from the internet, 
+use its corresponding IP Address, and port.
+
+
+b) Minotauro
+
+1. Make sure that crowdMpiCuda.cpp simulates the same number of characters that the client.
+
+2. Using socat (must be installed previously) redirect port 7000 udp to port 7001 tcp
+	
+	socat UDP4-RECVFROM:7000,fork TCP:localhost:7001
+	
+	
+3. Does not forget to load the bashrc with CUDA4 paths:
+
+	source ~/.bashrcCUDA4	
+	
+	
+	 
