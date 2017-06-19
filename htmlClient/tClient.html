@@ -1,0 +1,56 @@
+<html>
+<head>
+  <title>Render to Texture – Tangram</title>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
+  <style>
+        body {
+            margin: 0px;
+            border: 0px;
+            padding: 0px;
+        }
+    </style>
+    <!-- leaflet -->
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+
+    <!-- Main tangram library -->
+  <script src="./js/tangram.min.js"></script>
+  <script type="text/javascript" src="bytes.js"></script>
+  <script type="text/javascript" src="peripherals.js"></script>
+
+  <script type="text/javascript" src="shaders/vertexShMap.js" id="depthVrtxShdr"></script>
+  <script type="text/javascript" src="shaders/fragmentShMap.js" id="depthFgmtShdr"></script>
+
+
+  <script type="text/javascript" src="js/gl-matrix-2.2.1.js"></script>
+  <script type="text/javascript" src="tClient.js"></script>
+
+</head>
+
+
+
+
+
+
+<body>
+<button type="button" onclick="javascript:startingConnection();">Start</button>
+
+<div id="map" style="width: 512px; height: 512px; margin-top:20px;margin-left:20px" ></div>
+
+<canvas id="canvas2" width="512" height="512" style = "-moz-transform: scale(-1, 1);
+				-webkit-transform: scale(1, -1);
+				-o-transform: scale(1, -1);
+				transform: scale(1, -1);"></canvas>
+
+<canvas id="canvas3" width="512" height="512" style = "-moz-transform: scale(-1, 1);
+				-webkit-transform: scale(1, -1);
+				-o-transform: scale(1, -1);
+				transform: scale(1, -1);"></canvas>
+<canvas id="canvas4" width="512" height="512" style = "-moz-transform: scale(-1, 1);
+				-webkit-transform: scale(1, -1);
+				-o-transform: scale(1, -1);
+				transform: scale(1, -1);"></canvas>
+</body>
+</html>

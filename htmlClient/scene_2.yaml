@@ -1,0 +1,191 @@
+scene:
+    animated: true
+
+cameras:
+    camera1:
+        type: perspective
+        zoom: 17
+        active: true
+    camera2:
+        type: isometric
+        axis: [0, 1]
+        zoom: 17
+        active: false
+    camera3:
+        type: flat
+        zoom: 17
+        active: false
+
+lights:
+    light1:
+        type: directional
+        direction: [0, 1, -.5]
+        diffuse: .1
+        ambient: .3
+        visible: true
+    light2:
+        visible: false
+        type: point
+        position: [-74.0170, 40.7031, 100]
+        origin: world
+        ambient: .3
+        diffuse: 1
+        specular: .2
+
+sources:
+    osm:
+        type: TopoJSON
+        url: https://tile.mapzen.com/mapzen/vector/v1/all/{z}/{x}/{y}.topojson?api_key=mapzen-QF1osLn
+        max_zoom: 16
+
+layers:
+    earth:
+        data: { source: osm }
+        draw:
+            polygons:
+                order: function() { return feature.sort_rank; }
+                style: customPosition
+                color: '#ddeeee'
+
+    landuse:
+        data: { source: osm }
+        draw:
+            polygons:
+                order: function() { return feature.sort_rank; }
+                style: customPosition
+                color: '#aaffaa'
+
+    water:
+        data: { source: osm }
+        draw:
+            polygons:
+                order: function() { return feature.sort_rank; }
+                style: customPosition
+                color: '#003366'
+
+    roads:
+        data: { source: osm }
+        filter:
+            not: { kind: [path, rail, ferry] }
+        draw:
+            lines:
+                order: function() { return feature.sort_rank; }
+                style: customPosition
+                color: gray
+                width: 8
+                cap: round
+        highway:
+            filter:
+                kind: highway
+            draw:
+                lines:
+                    order: function() { return feature.sort_rank; }
+                    color: '#cc6666'
+                    style: customPosition
+                    width: 12
+                    outline:
+                        color: grey
+                        width: 1.5
+        minor_road:
+            filter:
+                kind: minor_road
+            draw:
+                lines:
+                    order: function() { return feature.sort_rank; }
+                    style: customPosition
+                    color: lightgrey
+                    width: 5
+
+    buildings:
+        data: { source: osm }
+        draw:
+            polygons:
+                order: function() { return feature.sort_rank; }
+                style: customPosition
+                color: |
+                    function () {
+                        var h = feature.height || 20;
+                        h = Math.min((h + 50)/ 255, .8); // max brightness: .8
+                        h = Math.max(h, .4); // min brightness: .4
+                        return [h, h, h];
+                    }
+        3d-buildings:
+            filter: { $zoom: { min: 15 } }
+            draw:
+                polygons:
+                    extrude: function () { return feature.height > 20 || $zoom >= 16; }
+
+styles:
+    custom-color:
+        base: polygons
+        animated: true
+        material:
+            ambient: 1.0
+            diffuse: 1.0
+        shaders:
+            blocks:
+                global: |
+                    mat4 rotationMatrix(vec3 axis, float angle){
+                        axis = normalize(axis);
+                        float s = sin(angle);
+                        float c = cos(angle);
+                        float oc = 1.0 - c;
+
+                        return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                                    oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                                    oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                                    0.0,                                0.0,                                0.0,                                1.0);
+                    }
+
+                position: |
+
+                    if(position.z > 0.){
+                    position.xyz = vec3(
+                            position.x,
+                            position.y,
+                            position.z+position.z*sin(u_time));
+                    }
+
+                color: |
+                    vec3 pos = worldPosition().xyz*0.01;
+                    color.r *= sin(pos.x + u_time * 0.5);
+                    color.g *= sin(pos.x + u_time * 1.0);
+                    color.b *= sin(pos.x + u_time * 1.5);
+
+
+    customPosition:
+        base: polygons
+        animated: true
+        shaders:
+            uniforms:
+                u_angle: 80.0
+                u_zFar: 100.0
+                u_zNear: 100.0
+            blocks:
+                global: |
+                    mat4 rotationMatrix(vec3 axis, float angle){
+                        axis = normalize(axis);
+                        float s = sin(angle);
+                        float c = cos(angle);
+                        float oc = 1.0 - c;
+
+
+                        return mat4(oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+                                    oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+                                    oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+                                    0.0,                                0.0,                                0.0,                                1.0);
+                    }
+
+                position: |
+
+                    float FC = 1.0/log(u_zFar + 1.0);
+                    position = position * rotationMatrix(vec3(1.0,0.0,0.0), radians(-u_angle));
+                    f_zBuff = log(position.w + 1.0)*FC;
+
+
+
+
+                color: |
+                    float value;
+                    value = f_zBuff;
+                    color = vec4(value,value,value,1.0);

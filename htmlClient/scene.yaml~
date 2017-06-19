@@ -1,0 +1,103 @@
+scene:
+    animated: true
+
+cameras:
+    camera1:
+        type: perspective
+        zoom: 17
+        active: false
+    camera2:
+        type: isometric
+        axis: [0, 1]
+        zoom: 17
+        active: true
+    camera3:
+        type: flat
+        zoom: 17
+        active: false
+
+lights:
+    light1:
+        type: directional
+        direction: [0, 1, -.5]
+        diffuse: .1
+        ambient: .3
+    light2:
+        visible: true
+        type: point
+        position: [-74.0170, 40.7031, 100]
+        origin: world
+        ambient: .3
+        diffuse: 1
+        specular: .2
+
+sources:
+    osm:
+        type: TopoJSON
+        url: https://tile.mapzen.com/mapzen/vector/v1/all/{z}/{x}/{y}.topojson?api_key=mapzen-QF1osLn
+        max_zoom: 16
+
+layers:
+    roads:
+        data: { source: osm }
+        filter:
+            not: { kind: [path, rail, ferry] }
+        draw:
+            lines:
+                order: function() { return feature.sort_rank; }
+                color: blue
+                width: 8
+                cap: round
+        highway:
+            filter:
+                kind: highway
+            draw:
+                lines:
+                    order: function() { return feature.sort_rank; }
+                    color: '#0006ff'
+                    width: 12
+                    outline:
+                        color: blue
+                        width: 2.5
+        minor_road:
+            filter:
+                kind: minor_road
+            draw:
+                lines:
+                    order: function() { return feature.sort_rank; }
+                    color: blue
+                    width: 5
+
+    buildings:
+        data: { source: osm }
+        draw:
+            polygons:
+                order: function() { return feature.sort_rank; }
+                color: |
+                    function () {
+                        var h = feature.height || 20;
+                        h = Math.min((h + 50)/ 255, .8); // max brightness: .8
+                        h = Math.max(h, .4); // min brightness: .4
+                        return [h, h, h];
+                    }
+        3d-buildings:
+            filter: { $zoom: { min: 15 } }
+            draw:
+                polygons:
+                    extrude: function () { return feature.height > 20 || $zoom >= 16; }
+	
+
+styles:
+    buildings:
+        base: polygons
+        animated: true
+        material:
+            ambient: 1.0
+            diffuse: 1.0
+        shaders:
+            blocks:
+                color: |
+                    vec3 pos = worldPosition().xyz*0.01;
+                    color.r *= sin(pos.x + u_time * 0.5);
+                    color.g *= sin(pos.x + u_time * 1.0);
+                    color.b *= sin(pos.x + u_time * 1.5);
