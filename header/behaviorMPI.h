@@ -14,11 +14,17 @@
 #define DATA_COLLECT 3
 #define MAX(a,b) ((a > b) ? a : b)
 
+
 #define agent_width 64
 #define agent_height 64
 #define world_width 4096
 #define world_height 4096
-
+/*
+#define agent_width 32
+#define agent_height 32
+#define world_width 1024
+#define world_height 1024
+*/
 //#define world_width 3072
 //#define world_height 3072
 #define agents_total   agent_width * agent_height

@@ -11,6 +11,7 @@ attribute vec3 normal;
 
 varying vec3 lightVec[ NUM_LIGHTS ];
 varying vec3 normalVec;
+//varying float zBuff;
 
 bindable uniform vec4 positions	[ NUM_INSTANCES ];
 bindable uniform vec4 rotations	[ NUM_INSTANCES ];
@@ -61,6 +62,8 @@ void main( void )
 	
 	vec3 vertexPosition		= P.xyz/P.w;
 
+	//zBuff = gl_Position.z;
+	
 	for( int l = 0; l < NUM_LIGHTS; l++ )
 	{
 		lightVec[l]			= normalize( gl_LightSource[l].position.xyz - vertexPosition );

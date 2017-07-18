@@ -561,18 +561,19 @@ void motion( int x, int y )
 //bool fst = true;
 float DistCam;
 float CanvasSizeMts = 0.0;
+
 void cameraChanged(){
 	float data[6];
 	float ModViewMatbuff[16];
-	float aux1,aux2;
+	float aux1,aux2,aux3;
+	float scalfac  = 100.0;
 
-	float aux3;
 
+	//pthread_mutex_lock(&mutexObj);
 	vec3 AngleAxis(1.0,0.0,0.0);
 	vec3 CamDir (0.0, -1.0, 0.0 );
 	vec3 CamUp	( 0.0f, 0.0f, 1.0f );
 
-	//cout<<" *************************Camera changed*****************************"<<endl;
 
 	data[0] = *((float *)MPI_interaction+_dist2ground);
 	data[1] = *((float *)MPI_interaction+_rectX);
@@ -581,22 +582,31 @@ void cameraChanged(){
 	data[4] = *((float *)MPI_interaction+_scalCam);
 	data[5] = *((float *)MPI_interaction+_camZoom);
 
+	/*
 	for(unsigned int c=0;c<16;++c)
 		*(ModViewMatbuff+c) = *((float *)MPI_interaction+_ModelViewMat+c);
+	*/
 
-
-
+	/*for(unsigned int c=0;c<6;++c)
+		cout<<"camera PID "<<pid<<" data:"<<c<<" "<<data[c]<<endl;
+	*/
 
 	//aux1 = -1.0*data[1]*data[4];
-	aux1 = -1.0*data[1];
+	aux1 = -1.0*data[1]*scalfac;
 
 	//aux2 = data[2]*data[4];
-	aux2 = data[2];
+	aux2 = data[2]*scalfac;
+	aux3 = data[0];
 
-
-	if(!(CanvasSizeMts!=0.0) || CanvasSizeMts != (aux3=data[0])){
+	if(!(CanvasSizeMts!=0.0) || CanvasSizeMts != aux3){
 		CanvasSizeMts = aux3;
-		DistCam = (CanvasSizeMts / tan(45.0*0.5))*97.9999;
+		DistCam = (CanvasSizeMts / tan(45.0*0.5))*scalfac;
+		//glsl_manager->setUniformf("depth_rect","z_Far",(DistCam/scalfac));
+		glsl_manager->setUniformf("instancing_culled_rigged","zNear",DistCam*100.0);
+		glsl_manager->setUniformf("instancing_culled_rigged","zFar",camera->getFrustum()->getFarD());
+		glsl_manager->setUniformf("instancing_culled_rigged_shadow","zNear",DistCam*100.0);
+		glsl_manager->setUniformf("instancing_culled_rigged_shadow","zFar",camera->getFrustum()->getFarD());
+
 		//cout<<"Canvas Size Mts "<<CanvasSizeMts<<" DistCam "<<DistCam<<endl;
 	}
 
@@ -604,13 +614,21 @@ void cameraChanged(){
 
 	//cout<<"DistCam "<<DistCam<<endl;
 	//DistCam*=100.0;
+
+
+	/**********************************/
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
 	glLoadMatrixf(ModViewMatbuff);
 	//gluPerspective(45, 1.0,1.0, CanvasSizeMts);
 
+	//cout<<" *************************camera setPosition pid "<<pid<<"*****************************"<<endl;
 	vec3 CamPos(aux1,DistCam,aux2);
+	//cout<<"Canvas Size Mts "<<CanvasSizeMts<<" DistCam "<<DistCam<<" x:"<<aux1<<" y:"<<DistCam<<" z:"<<aux2<<endl;
 	camera->setPosition(CamPos);
+	//cout<<" camera position setted"<<endl;
+	/**************************************/
+
 
 	//if(pid==2)
 		//cout<<" dist to ground: "<<DistCam<<endl;
@@ -624,6 +642,7 @@ void cameraChanged(){
 	}
 */
 
+	/****************************/
 	vec3 Pivot(aux1,0.0,aux2);
 	camera->setPivot(Pivot);
 
@@ -631,9 +650,16 @@ void cameraChanged(){
 	camera->setDirection(CamDir);
 	camera->setUpVec(CamUp);
 
+	camera->moveAround(-1.0f*(data[3]),AngleAxis);
+
+	camera->setView();
+
+	/***************************/
 
 	//rotAng = data[3]-camAngAnt;
-	camera->moveAround(-1.0f*(data[3]),AngleAxis);
+
+
+	//camera->moveAround(-1.0f*(data[3]),AngleAxis);
 
 
 	//camera->setViewModelView(ModViewMatbuff);
@@ -655,6 +681,7 @@ void cameraChanged(){
 	//camAngAnt = data[3];
 	 *
 	 */
+	//pthread_mutex_unlock(&mutexObj);
 }
 //
 //=======================================================================================
@@ -722,6 +749,10 @@ void checkMasterUserInput (void)
 			{
 				MPI_interaction[_mouseChangedFlag] = false;
 			}
+
+			if(MPI_interaction[_cameraChangedFlag]){
+				MPI_interaction[_cameraChangedFlag] = false;
+			}
 		}
 		else
 		{
@@ -735,9 +766,10 @@ void checkMasterUserInput (void)
 			{
 				motion (MPI_interaction[_mouseX], MPI_interaction[_mouseY]);
 			}
-			//cout<<"**********--------PID "<<pid<<" checkMasterUserInput _cameraChangedFlag-------------*********"<<endl;
 			if(MPI_interaction[_cameraChangedFlag]){
+				//cout<<"**********--------PID "<<pid<<" checkMasterUserInput _cameraChangedFlag " <<MPI_interaction[_cameraChangedFlag]<<"-------------*********"<<endl;
 				cameraChanged();
+				//cout<<"**********--------PID "<<pid<<" checkMasterUserInput  cameraChanged END-------------*********"<<endl;
 			}
 		}
 	}
@@ -759,7 +791,7 @@ void eventsFromBrowser ( )
 	static int xlast = -1, ylast = -1;
 	int dx, dy;
 
-
+	//cout<<"**********--------PID "<<pid<<" idle eventsFromBrowser check mouseHandler->refreshed()-------------*********"<<endl;
 	if ( mouseHandler->refreshed() )
 	{
 		MPI_interaction[_mouseX] 		= mouseHandler->getX();
@@ -795,6 +827,8 @@ void eventsFromBrowser ( )
 		MPI_interaction[_mouseChangedFlag] 	= true;
 		mouseHandler->refresh(false);
 	}
+
+	//cout<<"**********--------PID "<<pid<<" idle eventsFromBrowser check keyboardHandler->refreshed()-------------*********"<<endl;
 	if ( keyboardHandler->refreshed())
 	{
 		if (keyboardHandler->getState() == cKeyboardHandler::DOWN)
@@ -809,8 +843,10 @@ void eventsFromBrowser ( )
 
 		keyboardHandler->refresh (false);
 	}
-
+	//cout<<"**********--------PID "<<pid<<" idle eventsFromBrowser check frmClntHndlr->getRefreshFlg()-------------*********"<<endl;
+	pthread_mutex_lock (&mutexObj);
 	if(frmClntHndlr->getRefreshFlg()){
+
 		wCamInfo camInf = frmClntHndlr->getCoordInfo();
 		*(MPI_interaction+_dist2ground)=*(int*)(&(camInf.f_dist2Grnd));
 		*(MPI_interaction+_rectX)=*(int*)(&(camInf.f_rectX));
@@ -819,12 +855,17 @@ void eventsFromBrowser ( )
 		*(MPI_interaction+_scalCam)=*(int*)(&(camInf.f_scal_mod));
 		*(MPI_interaction+_camZoom)=*(int*)(&(camInf.f_Zoom));
 
+		/*
 		for(unsigned int c=0;c<16;++c)
 			*(MPI_interaction+_ModelViewMat+c)=*(int*)(&camInf.fp_modelViewMat[c]);
-
+		*/
 		MPI_interaction[_cameraChangedFlag] = true;
 		frmClntHndlr->setRefresh(false);
+
 	}
+	pthread_mutex_unlock (&mutexObj);
+	//cout<<"**********--------PID "<<pid<<" idle eventsFromBrowser end-------------*********"<<endl;
+
 }
 //
 //=======================================================================================

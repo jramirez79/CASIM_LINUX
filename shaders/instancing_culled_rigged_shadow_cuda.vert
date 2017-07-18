@@ -13,6 +13,10 @@ uniform sampler2DArray	riggingMT;
 uniform sampler2DArray	animationMT;
 uniform samplerBuffer	idsTextureBuffer;
 uniform samplerBuffer	posTextureBuffer;
+
+uniform float			zNear;
+uniform float			zFar;
+
 uniform mat4			ViewMat4x4;
 uniform mat4			ProjMat4x4;
 uniform mat4			ShadowMat4x4;
@@ -21,6 +25,7 @@ uniform int				AGENTS_NPOT;
 uniform int				ANIMATION_LENGTH;
 uniform int				STEP;
 uniform float			lod;
+varying	float			depthZ;
 
 mat4 cenital = mat4( 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 );
 mat4 azimuth = mat4( 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 );
@@ -618,6 +623,11 @@ void main( void )
 
 
 	vec4 P					= (modelViewProjMat *ShadowMat4x4 * tempva );
+	
 	P						= P/P.w;
 	gl_Position				= P;
+	
+	
+	//depthZ					= (gl_Position.y- zNear)/(zFar - zNear);
+	depthZ					= gl_Position.x/2.0;
 }

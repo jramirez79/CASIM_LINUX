@@ -9,6 +9,7 @@ varying vec4 normalColor;
 varying float agent_id;
 varying float agent_id2;
 varying float agent_id4;
+varying float depthZ;
 
 uniform sampler2DArray globalMT;	//SKIN, HAIR, CAP
 uniform sampler2DArray torsoMT;		//TORSO, WRINKLES, PATTERN_0...PATTERN_N
@@ -180,6 +181,9 @@ void main( void )
 	//gl_FragColor += normalColor;
 	gl_FragColor.a = 1.0;
 	//gl_FragColor = texture2DArray( riggingMT,	vec3(gl_TexCoord[0].st, 0) );
+	
+	gl_FragColor = vec4(vec3(depthZ),1.0);
+	
 }
 
 //Hue, saturation, luminance

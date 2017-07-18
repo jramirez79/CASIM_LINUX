@@ -59,6 +59,8 @@ broadcast_server 	_server_;
 cMouseHandler		*mouseHandler = 0;
 cKeyboardHandler	*keyboardHandler = 0;
 cFrameClientHandler* frmClntHndlr = nullptr;
+pthread_mutex_t 	mutexObj;
+
 int Gargc;
 char **Gargv;
 using namespace std;
@@ -184,7 +186,7 @@ void sendReceiveFrames (void)
 		//cout<<"*********************** sended  culled "<<" pid "<<pid<<" ************************"<<endl;
 		if (culling[0] != culling[1] ){
 			MPI_Send ((float*)colorPixels, pixelSize, MPI_BYTE, 0, 0, MPI_COMM_WORLD); // master pID = 0
-			//cout<<"*********************** sended  colorPixels "<<" pid "<<pid<<" ************************"<<endl;
+		//	cout<<"*********************** sended  colorPixels "<<" pid "<<pid<<" ************************"<<endl;
 		}
 	}
 	else
@@ -238,8 +240,20 @@ void captureScreen (float* pixels, string fboName, string colorTarget, string de
 	w 				= fbo.fbo_width;
 	h 				= fbo.fbo_height;
 //	depth			= new float [w*h];
+	//float depthVal[2];
 
 //	err_manager->getError("BEGIN: void captureScreen () ");
+
+	//camera->getFrustum()->setFarD(1000.0);
+	//camera->setView();
+
+	//camera->getFrustum()->setNearD(1000.0);
+	//camera->setView();
+	//depthVal[0] = camera->getFrustum()->getFarD();
+	//depthVal[1] = camera->getFrustum()->getNearD();
+	//float zDiff = depthVal[1]- depthVal[0];
+
+	glPushMatrix();
 
 	glReadBuffer	( fbo_manager->targets_map[colorTarget]);
 // Reading Color
@@ -250,11 +264,26 @@ void captureScreen (float* pixels, string fboName, string colorTarget, string de
 
 //	err_manager->getError("END: void captureScreen () ");
 
-	for (i=0, j=0;i<w*h*4;i+=4,j++)
+	for (i=0, j=0;i<w*h*4;i+=4,++j)
 	{
-		pixels[i+3] = depthPixels[j];
+		//if(pid==2){
+
+			//pixels[i+3] = (-depthPixels[j]*depthVal[0])/(depthPixels[j]*zDiff-depthVal[1]);
+		//pixels[i+3] = (2.0*depthVal[0])/(depthVal[1]+depthVal[0]-depthPixels[j]*zDiff);
+
+			pixels[i+3] = depthPixels[j];
+
+		//}
+		//else
+		//if(ant<depthPixels[j])
+			//ant = depthPixels[j];
+			//	pixels[i+3] = 1.0;
 	}
 
+
+	//cout << "FarD "<<camera->getFrustum()->getFarD()<<" NearD "<<camera->getFrustum()->getNearD()<<" PID "<<pid<<endl;
+	//cout << "Max depth level "<<ant<<" PID "<<pid<<endl;
+	glPopMatrix();
 }
 //
 //=======================================================================================
@@ -263,9 +292,9 @@ void updateScreenTextures () // Target: screen color or depth
 {
 	int i;
 	//cout<<"**********--------PID "<<pid<<" updateTexture -------------*********"<<endl;
-	if (!loadedTexture)
-	{
-		for  (i=1;i<np;i++)
+	if (!loadedTexture){
+	//cout<<"**********--------PID "<<pid<<" updateTexture !loadedTexture -------------*********"<<endl;
+		for  (i=1;i<np;++i)
 		{
 			ostringstream	screenName;
 			screenName << "Slave_" << i-1;
@@ -293,7 +322,8 @@ void updateScreenTextures () // Target: screen color or depth
 																					GL_RGBA32F,
 																					GL_RGBA,
 																					GL_TEXTURE_RECTANGLE )	);
-		else
+		else{
+			pthread_mutex_lock (&mutexObj);
 			screenTextures.push_back(	TextureManager::getInstance()->loadRawTexture(	str2,
 																						frmClntHndlr->getFrameBufferMyScTyp(),
 																						//frmClntHndlr->getFrameBufferNULL(),
@@ -304,7 +334,7 @@ void updateScreenTextures () // Target: screen color or depth
 																						GL_RGBA,
 																						GL_TEXTURE_RECTANGLE )	);
 
-		loadedTexture = true;
+
 		/*
 		if(cntTest<10){
 			cimg_library::CImg<float>* img_test = new cimg_library::CImg<float>(WIN_WIDTH,WIN_HEIGHT,1,4,0);
@@ -324,12 +354,17 @@ void updateScreenTextures () // Target: screen color or depth
 			img_test->save_png(std::string("testPNG_"+std::to_string(cntTest++)+".png").c_str());
 		}
 		*/
+		pthread_mutex_unlock (&mutexObj);
+		}
+		loadedTexture = true;
 	}
 	else
 	{
 		//cout<<"**********--------PID "<<pid<<" updateTexture loadedTexture-------------*********"<<endl;
-		for  (i=1;i<np;i++)
+		for  (i=1;i<np;++i)
 		{
+			//cout<<"**********--------PID "<<pid<<" updateTexture loadedTexture screenTextures-------------*********"<<endl;
+			//cout<<"**********--------PID "<<pid<<" updateTexture loadedTexture screenTextures number of items "<<screenTextures.size()<<" -------------*********"<<endl;
 			TextureManager::getInstance()->updateTexture(	screenTextures[i-1],
 															colorPixels[i-1],
 															GL_LINEAR,
@@ -341,8 +376,16 @@ void updateScreenTextures () // Target: screen color or depth
 
 		}
 
-		if(webScktsFlg)
+		if(webScktsFlg){
+			//cout<<"**********--------PID "<<pid<<" updateTexture loadedTexture screenBG webSckts-------------*********"<<endl;
+			//cout<<"**********--------PID "<<pid<<" updateTexture loadedTexture screenTextures number of items "<<screenTextures.size()<<" -------------*********"<<endl;
+			//cout<<"**********--------PID "<<pid<<" updateTexture loadedTexture screenTextures BG item "<<i<<" -------------*********"<<endl;
+
+			pthread_mutex_lock (&mutexObj);
+
+
 			TextureManager::getInstance()->updateTexture(	screenTextures[i-1],
+														//colorPixels[i-1],
 														frmClntHndlr->getFrameBufferMyScTyp(),
 														//frmClntHndlr->getFrameBufferNULL(),
 														GL_LINEAR,
@@ -352,7 +395,20 @@ void updateScreenTextures () // Target: screen color or depth
 														GL_RGBA,
 														GL_TEXTURE_RECTANGLE );
 
+			pthread_mutex_unlock (&mutexObj);
+		}
+		else{
+			TextureManager::getInstance()->updateTexture(	screenTextures[i-1],
+																imgCmpPtr,
+																	GL_LINEAR,
+																	512,
+																	512,
+																	GL_RGBA32F,
+																	GL_RGBA,
+																	GL_TEXTURE_RECTANGLE );
+		}
 	}
+	//cout<<"**********--------PID "<<pid<<" updateTexture END-------------*********"<<endl;
 }
 //
 //=======================================================================================
@@ -480,6 +536,8 @@ void display( void )
 			crowd_manager->getCrowds()[0]->getWidth(),
 			crowd_manager->getCrowds()[0]->getHeight(),
 			true										);
+
+
 		glsl_manager->activate( "tbo" );
 		{
 			glActiveTexture( GL_TEXTURE0 );
@@ -627,9 +685,9 @@ void display( void )
 #endif
 	fbo_manager->fbos["display_fbo"].fbo->Disable();
 	fbo_manager->displayTexture( str_pass_rect,
-											 str_display_tex,
-											 fbo_manager->fbos["display_fbo"].fbo_width,
-											 fbo_manager->fbos["display_fbo"].fbo_height );
+								 str_display_tex,
+								 fbo_manager->fbos["display_fbo"].fbo_width,
+								 fbo_manager->fbos["display_fbo"].fbo_height );
 	glFlush();
 	if(!webScktsFlg){
 
@@ -781,6 +839,7 @@ void idle( void )
 
 	int i = 0;
 
+	/*
 	if(webScktsFlg){
 		checkMasterUserInput 	();
 	//	MPI_Barrier				(MPI_COMM_WORLD);
@@ -790,11 +849,15 @@ void idle( void )
 		sendReceiveFrames 		();
 		checkMasterUserInput 	();
 	}
-
-
+	*/
+	//cout<<"**********--------PID "<<pid<<" idle start-------------*********"<<endl;
+	sendReceiveFrames 		();
+	//cout<<"**********--------PID "<<pid<<" idle sendReceiveFrames-------------*********"<<endl;
+	checkMasterUserInput 	();
+	//cout<<"**********--------PID "<<pid<<" idle checkMasterUserInput-------------*********"<<endl;
 	MPI_Barrier				(MPI_COMM_WORLD);
 
-	cout<<"**********--------PID "<<pid<<" idle  MPI_BARRIER-------------*********"<<endl;
+	//cout<<"**********--------PID "<<pid<<" idle  MPI_BARRIER-------------*********"<<endl;
 
 	if (pid != 0)
 	{
@@ -875,6 +938,7 @@ void idle( void )
 			str_lod3.append( ss_lod3.str() );
 		}
 
+		//cout<<"**********--------PID "<<pid<<" idle  child cicle 5-------------*********"<<endl;
 	#ifdef CUDA_PATHS
 		// EVERY 30 FRAMES, UPDATE DENSITY
 		if( frame_counter % 30 == 0 )
@@ -977,6 +1041,7 @@ void idle( void )
 	#endif
 
 #if defined MPI_PATHS_ON_NODES
+	//cout<<"**********--------PID "<<pid<<" idle  child cicle 6-------------*********"<<endl;
 	}
 	else //  if (pid == 0)
 	{
@@ -1011,7 +1076,7 @@ void idle( void )
 
 		//cout<<"**********--------PID "<<pid<<" idle updateScreenTextures-------------*********"<<endl;
 		updateScreenTextures 	();
-
+		//cout<<"**********--------PID "<<pid<<" idle after updateScreenTextures-------------*********"<<endl;
 
 		if(webScktsFlg){
 			//cout<<"**********--------PID "<<pid<<" idle eventsFromBrowser-------------*********"<<endl;
@@ -1022,6 +1087,7 @@ void idle( void )
 #endif
 	if(!webScktsFlg)
 		glutPostRedisplay();
+	//cout<<"**********--------PID "<<pid<<" idle end-------------*********"<<endl;
 }
 //
 //=======================================================================================
@@ -1104,51 +1170,58 @@ void cleanup_master ( void )
 //=======================================================================================
 //
 
-bool readPng2Mem( void ){
+bool readPng2Mem( bool ident ){
 	try{
 
-		imageBG = new cimg_library::CImg<float>("assets/background/background_7.png");
-		imageDM = new cimg_library::CImg<float>("assets/background/background_depth_7.png");
+		if(!ident){
+			imageBG = new cimg_library::CImg<float>("assets/background/background_7.png");
+			imageDM = new cimg_library::CImg<float>("assets/background/background_depth_7.png");
 
 
-		unsigned int sizeImg = imageBG->height()*imageBG->width()*4;
-		unsigned char spImg1,spImg2;
-		imgCmpPtr = new float[sizeImg];
+			unsigned int sizeImg = imageBG->height()*imageBG->width()*4;
+			unsigned char spImg1,spImg2;
+			imgCmpPtr = new float[sizeImg];
 
-		cout<<" imgBG width "<<imageBG->width()<<" height "<<imageBG->height()<<" spectrum "<<imageBG->spectrum()<<" size " <<imageBG->size()<<
-			" -------- imgDM width "<<imageDM->width()<<" height "<<imageDM->height()<<" spectrum "<<imageDM->spectrum()<<" size " <<imageDM->size()<<endl;
+			cout<<" imgBG width "<<imageBG->width()<<" height "<<imageBG->height()<<" spectrum "<<imageBG->spectrum()<<" size " <<imageBG->size()<<
+				" -------- imgDM width "<<imageDM->width()<<" height "<<imageDM->height()<<" spectrum "<<imageDM->spectrum()<<" size " <<imageDM->size()<<endl;
 
-		spImg1 = imageBG->spectrum();
-		spImg2 = imageDM->spectrum();
+			spImg1 = imageBG->spectrum();
+			spImg2 = imageDM->spectrum();
 
-		if(!(spImg1==3 || spImg1==4))
-			return false;
+			if(!(spImg1==3 || spImg1==4))
+				return false;
 
-		unsigned int cnt=0,cntx,cnty;
-		float valueF,ZNEAR,ZFAR,A,B;
-		ZNEAR = 10.1;
-		ZFAR = 500.0;
-		A=ZNEAR-ZFAR;
-		B=ZFAR+ZNEAR;
-		for(cnty=0; cnty<imageBG->width();++cnty){
-			for(cntx=0; cntx<imageBG->height();++cntx){
-				imgCmpPtr[cnt++] = (*(imageBG->data(cntx,cnty,0,0)))/(255.0);
-				imgCmpPtr[cnt++] = (*(imageBG->data(cntx,cnty,0,1)))/(255.0);
-				imgCmpPtr[cnt++] = (*(imageBG->data(cntx,cnty,0,2)))/(255.0);
-				//imgCmpPtr[cnt++] = 0.99;
-				valueF = (*(imageDM->data(cntx,cnty,0,0)))/(255.0);
-				valueF += 0.03;
-				//valueF = 1.0;
-				//valueF = (-1.0*valueF*ZNEAR)/(valueF*(ZFAR-ZNEAR)-ZFAR);
-				//imgCmpPtr[cnt++]	= (valueF*ZNEAR)/(ZFAR+A*valueF);
-				imgCmpPtr[cnt++]	= valueF;
-				//cout<<" valueF "<<valueF <<" cnt "<<cnt<<" zNEW "<<imgCmpPtr[cnt-1]<<endl;
-				//imgCmpPtr[cnt++] = (valueF*A + ZFAR)/(valueF*B - ZFAR);
+			unsigned int cnt=0,cntx,cnty;
+			float valueF,ZNEAR,ZFAR,A,B;
+			ZNEAR = 10.1;
+			ZFAR = 500.0;
+			A=ZNEAR-ZFAR;
+			B=ZFAR+ZNEAR;
+			for(cnty=0; cnty<imageBG->width();++cnty){
+				for(cntx=0; cntx<imageBG->height();++cntx){
+					imgCmpPtr[cnt++] = (*(imageBG->data(cntx,cnty,0,0)))/(255.0);
+					imgCmpPtr[cnt++] = (*(imageBG->data(cntx,cnty,0,1)))/(255.0);
+					imgCmpPtr[cnt++] = (*(imageBG->data(cntx,cnty,0,2)))/(255.0);
+					//imgCmpPtr[cnt++] = 0.99;
+					valueF = (*(imageDM->data(cntx,cnty,0,0)))/(255.0);
+					valueF += 0.03;
+					//valueF = 1.0;
+					//valueF = (-1.0*valueF*ZNEAR)/(valueF*(ZFAR-ZNEAR)-ZFAR);
+					//imgCmpPtr[cnt++]	= (valueF*ZNEAR)/(ZFAR+A*valueF);
+					imgCmpPtr[cnt++]	= valueF;
+					//cout<<" valueF "<<valueF <<" cnt "<<cnt<<" zNEW "<<imgCmpPtr[cnt-1]<<endl;
+					//imgCmpPtr[cnt++] = (valueF*A + ZFAR)/(valueF*B - ZFAR);
 
-				//imgCmpPtr[cnt++] = (*(imageDM->data(cntx,cnty,0,0)))/(255.0);
+					//imgCmpPtr[cnt++] = (*(imageDM->data(cntx,cnty,0,0)))/(255.0);
 
 
+				}
 			}
+		}
+		else{
+			imgCmpPtr = new float[512*512*4];
+			for(unsigned cnt=0;cnt<(512*512*4);++cnt)
+				imgCmpPtr[cnt] = 1.0;
 		}
 
 
@@ -1195,6 +1268,7 @@ void launchWebSocketServer ()
 
 	mouseHandler	= new cMouseHandler 	();
 	keyboardHandler = new cKeyboardHandler 	();
+
 	frmClntHndlr	= new cFrameClientHandler(WIN_WIDTH,WIN_HEIGHT);
 
 	frmClntHndlr->compute_scalMod(0.0,171.524,1.7);
@@ -1202,6 +1276,7 @@ void launchWebSocketServer ()
 	_server_.setMouseHandler 	( mouseHandler		);
 	_server_.setKeyboardHandler	( keyboardHandler 	);
 	_server_.setFrmClntHandler	( frmClntHndlr		);
+	_server_.setMutexObj		( &mutexObj );
 
 	int rc = pthread_create( &threads2, NULL, webSocketServer, NULL );
 	if( rc )
@@ -1427,9 +1502,11 @@ void glLoop (RenderContext *rcx)
 void runCompositeWindowless (int argc, char** argv)
 {
 	//cout<<"***************** runCompositeWindowless pid "<<pid<<" ********************"<<endl;
+	pthread_mutex_init (&mutexObj, NULL);
 	glLoop  		( &rcx );
 	closeContext 	( &rcx );
 	freeAll_master	(	);
+	pthread_mutex_destroy(&mutexObj);
 
 }
 //
@@ -1489,9 +1566,11 @@ int main ( int argc, char *argv[] )
 	MPI_Comm_rank (MPI_COMM_WORLD, &pid);
 	MPI_Comm_size (MPI_COMM_WORLD, &np);
 
-	if(pid==0 && !webScktsFlg)
-	//if(pid==0)
-		readPng2Mem();
+
+	if(pid==0 && !webScktsFlg){
+		//cout <<"-*************************************root readPng2Mem PID "<<pid<<" -***************************************-"<<endl;
+		readPng2Mem(true);
+	}
 
 	ostringstream log_file;
 	log_file << "CASIM_LOG_" << pid << ".html";
@@ -1523,6 +1602,7 @@ int main ( int argc, char *argv[] )
 
 		}
 
+
 		init_master	( 	argc, argv	);
 
 //		log_manager->file_log (LogManager::MPI, "calling data_server() by process %d BEGIN: \n", pid);
@@ -1538,7 +1618,7 @@ int main ( int argc, char *argv[] )
 			glutCloseFunc   			(   cleanup_master   			);
 		}
 		else{
-		//	cout <<"-*************************************-FASE 1.1 root runRenderingAndComposite PID "<<pid<<" -***************************************-"<<endl;;
+		//	cout <<"-*************************************-FASE 1.1 root runRenderingAndComposite PID "<<pid<<" -***************************************-"<<endl;
 			launchWebSocketServer	( );
 			//cout<<"-*************************************-FASE 1.2 root PID "<<pid<<" -***************************************-"<<endl;
 
@@ -1597,6 +1677,7 @@ int main ( int argc, char *argv[] )
 	}
 	else{
 		if(pid==0){
+
 			runCompositeWindowless  (argc, argv); // Runs composition mode
 			//cout<<"-*************************************-FASE 6 root PID "<<pid<<" -***************************************-"<<endl;
 		}

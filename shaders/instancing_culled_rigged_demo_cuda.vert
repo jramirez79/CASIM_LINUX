@@ -17,6 +17,7 @@ varying vec3			ti;
 varying float			agent_id;
 varying float			agent_id2;
 varying float			agent_id4;
+varying float			depthZ;
 
 uniform sampler2DArray	riggingMT;
 uniform sampler2DArray	animationMT;
@@ -30,6 +31,9 @@ uniform int				STEP;
 uniform float			lod;
 uniform float			gender;
 uniform float			doHeightAndDisplacement;
+
+uniform float			zNear;
+uniform float			zFar;
 
 mat4 cenital = mat4( 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 );
 mat4 azimuth = mat4( 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 );
@@ -692,7 +696,9 @@ void main( void )
 	lightVec				= normalize( camPos - P.xyz );
 	P						= P/P.w;
 	gl_Position				= gl_ProjectionMatrix * P;
+	//gl_Position 			= P;
 	N						= normalize(gl_NormalMatrix * normal.xyz);
 	normalColor				= vec4(disp.r, disp.r, disp.r, 1.0);
-
+	
+	depthZ					= (gl_Position.z- zNear)/(zFar - zNear);
 }

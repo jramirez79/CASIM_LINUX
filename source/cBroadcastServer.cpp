@@ -16,8 +16,10 @@
 
 unsigned char 	webSocketKey;
 //extern bool		keyChangedFlag;
+pthread_mutex_t 	*ptrmutexObj;
 
 unsigned int cntTest = 0;
+unsigned char frmCnt = 0;
 
 broadcast_server::broadcast_server()
 {
@@ -39,8 +41,7 @@ broadcast_server::broadcast_server()
 
 	 mouseHandler		= 0;
 	 keyboardHandler	= 0;
-
-
+	 /* Create a mutex */
 }
 //
 //=======================================================================================
@@ -55,7 +56,7 @@ broadcast_server::~broadcast_server()
 //
 void broadcast_server::on_open(connection_hdl hdl)
 {
-       m_connections.insert(hdl);
+	 m_connections.insert(hdl);
 }
 //
 //=======================================================================================
@@ -88,10 +89,12 @@ void broadcast_server::on_message(connection_hdl hdl, server::message_ptr msg)
     	{
     		val << msg->get_payload();
 
+    		//std::cout << "Stop val  "<<stop<<std::endl;
     		if (!stop)
     		{
     			type = val.str().data()[0];
 
+    			//std::cout << "Type  "<<type<<std::endl;
     			/*
 				switch(type){
 				case MOUSE_EVENT:
@@ -150,13 +153,19 @@ void broadcast_server::on_message(connection_hdl hdl, server::message_ptr msg)
 					//std::cout << "rstate: " << val.str().data()[1] << "cstate: " << keyboardHandler->getState() << std::endl;
 				}
 				else if(type == CLIENT_FRAME_EVENT){
+					pthread_mutex_lock (pc_MutexObj);
 					//std::cout<<"CLIENT_FRAME_EVENT first byte of data is "<< (unsigned int)((unsigned char)val.str().data()[0])<<std::endl;
-						if(!(pc_frmClientHandler->processDataBuffer(&val)))
+
+
+					if(!(pc_frmClientHandler->processDataBuffer(&val)))
 							std::cout<<"Error at receiving the frameData from the client"<<std::endl;
-						//else
+
+
+					//else
 							//std::cout<<"Sucess at receiving the frameData from the client"<<std::endl;
 						//pc_frmClientHandler->printInfo();
 
+						/*
 						if(cntTest<10){
 									cimg_library::CImg<float>* img_test = new cimg_library::CImg<float>(WIN_WIDTH,WIN_HEIGHT,1,4,0);
 									float * pixData = pc_frmClientHandler->getFrameBufferMyScTyp();
@@ -175,10 +184,11 @@ void broadcast_server::on_message(connection_hdl hdl, server::message_ptr msg)
 									img_test->save_png(std::string("testPNG_"+std::to_string(cntTest++)+".png").c_str());
 								}
 
+						*/
 
-						pc_frmClientHandler->setRefresh(true);
-						needMoreFrames = true;
-						stop = false;
+						//needMoreFrames = true;
+						//stop = false;
+						pthread_mutex_unlock (pc_MutexObj);
 				}
     		}
     		if (val.str().compare("GiveMeMore") == 0 || val.str().compare("STSIM")==0 )
@@ -312,6 +322,12 @@ cFrameClientHandler* broadcast_server::getFrmClntHndler( )
 //
 void broadcast_server::setFrmClntHandler(cFrameClientHandler* frmClntHndlr){
 	pc_frmClientHandler = frmClntHndlr;
+}
+//
+//=======================================================================================
+//
+void broadcast_server::setMutexObj(pthread_mutex_t *ptrMutex){
+	pc_MutexObj = ptrMutex;
 }
 //
 //=======================================================================================

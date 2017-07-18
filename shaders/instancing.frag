@@ -5,6 +5,8 @@ uniform sampler2D diffuseTexture;
 
 varying vec3 lightVec[NUM_LIGHTS];
 varying vec3 normalVec;
+//varying float zBuff;
+
 
 void main( void )
 {
@@ -21,5 +23,6 @@ void main( void )
 		gl_FragColor += diffuseMaterial * ( lambertFactor + lambertFactorNeg );
 	}
 	gl_FragColor /= NUM_LIGHTS;
+	//gl_FragColor = vec4(vec3(zBuff),1.0);
 }
 

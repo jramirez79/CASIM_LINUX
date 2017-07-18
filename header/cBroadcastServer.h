@@ -45,6 +45,7 @@ public:
     void setMouseHandler			( cMouseHandler			*mouseH							);
     void setKeyboardHandler			( cKeyboardHandler		*keyboardH						);
     void setFrmClntHandler			( cFrameClientHandler   *frmClntHdlr					);
+    void setMutexObj				( pthread_mutex_t		*ptrMutex);
 
     bool sendMoreFrames				(	) 				{return needMoreFrames; };
     cFrameClientHandler* getFrmClntHndler();
@@ -63,6 +64,7 @@ private:
     cMouseHandler		*mouseHandler;
     cKeyboardHandler	*keyboardHandler;
     cFrameClientHandler *pc_frmClientHandler;
+    pthread_mutex_t		*pc_MutexObj;
 
 
 

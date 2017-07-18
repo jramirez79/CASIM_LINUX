@@ -12,6 +12,7 @@ uniform float policy_height;
 varying float level;
 varying float intensity;
 varying vec2 policoord;
+varying float depthZ;
 
 void main()
 {
@@ -23,4 +24,5 @@ void main()
 	intensity = texture2DRect( density, policoord ).x / 20.0;
 	intensity = clamp( intensity, 0.0, 1.0 );
 	gl_Position = ftransform();
+	depthZ = gl_Position.z; 
 }

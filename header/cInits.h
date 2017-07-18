@@ -146,6 +146,8 @@ void init_glsl( void )
 	input_instancing_culled_rigged->s_uni_f["doColor"]					= 0.0f;
 	input_instancing_culled_rigged->s_uni_f["doPatterns"]				= 0.0f;
 	input_instancing_culled_rigged->s_uni_f["doFacial"]					= 0.0f;
+	input_instancing_culled_rigged->s_uni_f["zNear"]					= 100.0f;
+	input_instancing_culled_rigged->s_uni_f["zFar"]						= 10000.0f;
 
 	input_shaders.push_back( input_instancing_culled_rigged );
 	err_manager->getError ("END: instancing_culled_rigged");
@@ -256,6 +258,11 @@ void init_glsl( void )
 	input_instancing_culled_rigged_shadow->s_uni_i["ANIMATION_LENGTH"]	= 0;
 	input_instancing_culled_rigged_shadow->s_uni_i["STEP"]				= 0;
 	input_instancing_culled_rigged_shadow->s_uni_f["lod"]				= 0.0f;
+	input_instancing_culled_rigged_shadow->s_uni_f["lod"]				= 0.0f;
+	input_instancing_culled_rigged->s_uni_f["zNear"]					= 100.0f;
+	input_instancing_culled_rigged->s_uni_f["zFar"]						= 10000.0f;
+
+
 	input_shaders.push_back( input_instancing_culled_rigged_shadow );
 	err_manager->getError ("END: instancing_culled_rigged_shadow");
 #else

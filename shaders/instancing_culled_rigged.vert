@@ -17,6 +17,7 @@ varying vec3			ti;
 varying float			agent_id;
 varying float			agent_id2;
 varying float			agent_id4;
+varying float			depthZ;
 
 uniform sampler2DArray	riggingMT;
 uniform sampler2DArray	animationMT;
@@ -693,4 +694,5 @@ void main( void )
 
 	//vec3 s = normalize( vec3(gl_LightSource[0].position.xyz - P.xyz ) );
 	//lightVec = (gl_LightSource[0].diffuse*max( dot( s, N ), 0.0 )).xyz;
+	depthZ					= gl_Position.z;
 }

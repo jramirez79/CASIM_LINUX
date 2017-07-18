@@ -71,6 +71,7 @@ void init_glsl_master( void )
 	input_screen_composition_rect->s_frag = sFrag;
 	input_screen_composition_rect->s_uni_i["tex"] = 0;
 	input_screen_composition_rect->s_uni_i["cmp_flg"] = 0;
+	input_screen_composition_rect->s_uni_f["z_Far"] = 0.0;
 	input_shaders.push_back( input_screen_composition_rect );
 
 

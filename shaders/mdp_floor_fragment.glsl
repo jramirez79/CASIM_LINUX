@@ -4,6 +4,8 @@
 varying float level;
 varying float intensity;
 varying vec2 policoord;
+varying float depthZ;
+
 
 uniform sampler2D layer0;
 uniform sampler2D layer1;

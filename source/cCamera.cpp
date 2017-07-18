@@ -104,7 +104,7 @@ void Camera::setPivot( vec3& pivot )
 	Camera::pivot 	= pivot;
 	vec3 dir = pivot - position;
 	if( length( dir ) > 0 )
-	direction		= normalize( pivot - position );
+	direction		= normalize( dir );
 	right    		= cross( direction, up );
 }
 //
@@ -309,7 +309,13 @@ void Camera::draw( void )
 void Camera::setView( void )
 {
 	active = true;
-	lookat = position + direction;
+	//vec3 aux;
+	//lookat = position + direction;
+	//aux = position - pivot;
+	//float auxFARD = length( aux );
+	//auxFARD = 2.0* auxFARD;
+	//std::cout<<"Distance from camera to center "<<auxFARD<<std::endl;
+	//frustum->setFarD(auxFARD);
 	glMatrixMode( GL_PROJECTION );
 	glLoadIdentity();
 	frustum->updateRatio();
@@ -317,11 +323,13 @@ void Camera::setView( void )
 					frustum->getRatio(),
 					frustum->getNearD(),
 					frustum->getFarD()	);
+
 	glMatrixMode( GL_MODELVIEW );
 	glLoadIdentity();
 	gluLookAt(
 		position.x, position.y, position.z,
-		lookat.x,   lookat.y,   lookat.z,
+		//lookat.x,   lookat.y,   lookat.z,
+		pivot.x,   pivot.y,   pivot.z,
 		up.x,       up.y,       up.z
 	);
 	frustum->setPlanes( position, lookat, up );

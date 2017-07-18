@@ -12,8 +12,6 @@
 
 
 
-
-
 #endif /* CFRAMECLIENTHANDLER_H_ */
 
 
@@ -53,6 +51,7 @@ private:
 	bool	b_cmbndSrcImg;
 	bool 	b_intDtCrds;
 	wCamInfo s_cmraInf;
+	std::mutex c_frmLock;
 
 	bool	b_refresh;
 
@@ -106,14 +105,21 @@ public:
 		unsigned int aux = val->str().length();
 		unsigned int tLenght = 1 + ui_CoordSz + ui_BffrSzBytes;
 
-		if(aux==0 || aux!=(tLenght) )
+		if(aux==0 || (aux!=(tLenght-ui_CoordSz) && aux!=tLenght) ){
+			//std::cout<<" aux "<<aux<<" tLenght "<<tLenght<<" tLenghtWoData "<<tLenght-ui_CoordSz<<std::endl;
 			return false;
+		}
 
 		val->str().copy(pc_frameBuffer,ui_BffrSzBytes,0);
 		pc_frameBuffer[0] = val->str().data()[ui_BffrSzBytes];
-		val->str().copy(pf_coordBuffer,ui_CoordSz,1+ui_BffrSzBytes);
 
-		setCoordVal(pf_coordBuffer,b_intDtCrds);
+		if(aux==tLenght){
+			//std::cout<<" aux "<<aux<<" tLenght "<<tLenght<<" tLenghtWoData "<<tLenght-ui_CoordSz<<std::endl;
+			val->str().copy(pf_coordBuffer,ui_CoordSz,1+ui_BffrSzBytes);
+			setCoordVal(pf_coordBuffer,b_intDtCrds);
+			setRefresh(true);
+		}
+
 		if(b_intDtCrds)
 			b_intDtCrds = false;
 
