@@ -112,6 +112,7 @@ void FboManager::displayTexture( 	string 			shader_name,
 				if(pixels!=0){
 					//cout<<"***************** FboManager::displayTexture Before glReadPixels ********************"<<endl;
 					glReadPixels (0,0,width,height,GL_RGB, GL_UNSIGNED_BYTE, pixels );
+					//glReadPixels (0,0,width,height,GL_RGBA, GL_UNSIGNED_BYTE, pixels );
 					//cout<<"***************** FboManager::displayTexture After glReadPixels ********************"<<endl;
 				}
 			}
@@ -667,6 +668,8 @@ bool FboManager::init( unsigned int display_width, unsigned int display_height, 
 			local_fbos.push_back( local_fbo );
 		}
 	}
+	swpPixelsIn=swpPixelsOut=NULL;
+	swpPixelsInLen=swpPixelsOutLen=0;
 	return true;
 }
 //
@@ -772,6 +775,9 @@ bool FboManager::init( void )
 			return false;
 		}
 	}
+	swpPixelsIn=swpPixelsOut=NULL;
+	swpPixelsInLen=swpPixelsOutLen=0;
+
 	return true;
 }
 //
@@ -1001,6 +1007,64 @@ unsigned int FboManager::getHeight( string fbo_name )
 												   fbo_name.c_str()										);
 		return 0;
 	}
+}
+//
+//============================================================================================================
+//
+unsigned char* FboManager::getswpBuffin(	string fbo_name	){
+	if( fbos.find( fbo_name ) != fbos.end() )
+		{
+			unsigned int arrSz = fbos[fbo_name].fbo_height*fbos[fbo_name].fbo_width*3;
+
+			if(swpPixelsIn==NULL || swpPixelsInLen!= arrSz){
+				delete swpPixelsIn;
+				swpPixelsInLen = arrSz;
+				swpPixelsIn = new unsigned char[swpPixelsInLen];
+			}
+
+			return swpPixelsIn;
+		}
+		else
+		{
+			log_manager->log( LogManager::FBO_MANAGER, "FBO_HEIGHT::FBO \"%s\" not registered in FboManager.",
+													   fbo_name.c_str()										);
+			return 0;
+		}
+}
+//
+//============================================================================================================
+//
+unsigned char* FboManager::getswpBuffout(	string fbo_name	){
+	if( fbos.find( fbo_name ) != fbos.end() )
+		{
+			unsigned int arrSz = fbos[fbo_name].fbo_height*fbos[fbo_name].fbo_width*4;
+
+			if(swpPixelsOut==NULL || swpPixelsOutLen!= arrSz){
+				delete swpPixelsOut;
+				swpPixelsOutLen = arrSz;
+				swpPixelsOut = new unsigned char[swpPixelsOutLen];
+			}
+
+			return swpPixelsOut;
+		}
+		else
+		{
+			log_manager->log( LogManager::FBO_MANAGER, "FBO_HEIGHT::FBO \"%s\" not registered in FboManager.",
+													   fbo_name.c_str()										);
+			return 0;
+		}
+}
+//
+//============================================================================================================
+//
+unsigned int FboManager::getswpBuffinLen(){
+	return swpPixelsInLen;
+}
+//
+//============================================================================================================
+//
+unsigned int FboManager::getswpBuffOutLen(){
+	return swpPixelsOutLen;
 }
 //
 //============================================================================================================

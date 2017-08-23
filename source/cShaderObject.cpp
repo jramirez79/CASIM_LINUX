@@ -525,6 +525,92 @@ void ShaderObject::setUniformMatrix( char* name, float* value, int size )
 //
 //=======================================================================================
 //
+void ShaderObject::updateUniformi( char* name, int value )
+{
+	for( int i = 0; i < num_vars; ++i )
+	{
+		if( strcmp( name, variable_names[i] ) == 0 )
+		{
+			//cout<<" name "<<name<<" value "<<value<<endl;
+			glProgramUniform1i(shader_id,variable_ids[i],value);
+			break;
+		}
+	}
+}
+//
+//=======================================================================================
+//
+void ShaderObject::updateUniformf( char* name, float value )
+{
+	for( int i = 0; i < num_vars; ++i )
+	{
+		if( strcmp( name, variable_names[i] ) == 0 )
+		{
+			glProgramUniform1f(shader_id,variable_ids[i],value);
+			break;
+		}
+	}
+}
+//
+//=======================================================================================
+//
+void ShaderObject::updateUniformiv( char* name, int* value, int size )
+{
+	unsigned int i = glGetUniformLocation( shader_id, name );
+	switch( size )
+	{
+		case 2:
+			glProgramUniform2i( shader_id,i, value[0], value[1] );
+			break;
+		case 3:
+			glProgramUniform3i( shader_id,i, value[0], value[1], value[2] );
+			break;
+		case 4:
+			glProgramUniform4i( shader_id,i, value[0], value[1], value[2], value[3]);
+			break;
+	}
+}
+//
+//=======================================================================================
+//
+void ShaderObject::updateUniformfv( char* name, float* value, int size )
+{
+	unsigned int i = glGetUniformLocation( shader_id, name );
+	switch( size )
+	{
+		case 2:
+			glProgramUniform2f( shader_id,i, value[0], value[1] );
+			break;
+		case 3:
+			glProgramUniform3f( shader_id,i, value[0], value[1], value[2] );
+			break;
+		case 4:
+			glProgramUniform4f( shader_id,i, value[0], value[1], value[2], value[3]);
+			break;
+	}
+}
+//
+//=======================================================================================
+//
+void ShaderObject::updateUniformMatrix( char* name, float* value, int size )
+{
+	unsigned int i = glGetUniformLocation( shader_id, name );
+	switch( size )
+	{
+		case 2:
+			glProgramUniformMatrix2fv( shader_id, i, 1, GL_FALSE, value );
+			break;
+		case 3:
+			glProgramUniformMatrix3fv( shader_id, i, 1, GL_FALSE, value );
+			break;
+		case 4:
+			glProgramUniformMatrix4fv( shader_id, i, 1, GL_FALSE, value );
+			break;
+	}
+}
+//
+//=======================================================================================
+//
 void ShaderObject::activate( void )
 {
 	glUseProgram( shader_id );

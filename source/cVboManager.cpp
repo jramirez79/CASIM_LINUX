@@ -1526,6 +1526,8 @@ void VboManager::render_instanced_culled_rigged_vbo4(	Camera*			cam,
 														float			doColor,
 														float			doFacial					)
 {
+
+	//cout<<"**************************************************render_instanced_culled_rigged_vbo4******************************************"<<endl;
 	glsl_manager->activate( instancing_culled_rigged_shader_name );
 	{
 	    string name;
@@ -1999,6 +2001,8 @@ void VboManager::render_instanced_culled_rigged_vbo5(	Camera*			cam,
 														float*			shadowMat,
 														bool			wireframe					)
 {
+
+	//cout<<"**************************************************render_instanced_culled_rigged_vbo5******************************************"<<endl;
 	glsl_manager->activate( instancing_culled_rigged_shadow_shader_name );
 	{
 	    string name;

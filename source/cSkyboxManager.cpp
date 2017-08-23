@@ -44,6 +44,9 @@ SkyboxManager::SkyboxManager( 	unsigned int	id_,
 	HWIDTH					= WIDTH  / 2.0f;
 	HHEIGHT					= HEIGHT / 2.0f;
 	HLENGTH					= LENGTH / 2.0f;
+
+	std::cout<<"HWIDTH "<<HWIDTH<<" HHEIGHT "<<HHEIGHT<<" HLENGTH "<<HLENGTH<<std::endl;
+
 	bumped.push_back( bump[FRONT]  );
 	bumped.push_back( bump[BACK]   );
 	bumped.push_back( bump[LEFT]   );

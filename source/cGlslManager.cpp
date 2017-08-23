@@ -249,6 +249,61 @@ void GlslManager::setUniformMatrix( string	shader_name,
 //
 //=======================================================================================
 //
+void GlslManager::updateUniformi( string shader_name, char* name, int i )
+{
+	if( shaders_map.find( shader_name ) != shaders_map.end() )
+	{
+		int s = shaders_map[shader_name];
+		shaders[s].shader->updateUniformi( name, i );
+	}
+	else
+	{
+		log_manager->log( LogManager::LERROR, "Shader \"%s\" not registered in "
+											  "GLSL Manager, function: updateUniformi.",
+											  shader_name.c_str()				);
+	}
+}
+//
+//=======================================================================================
+//
+void GlslManager::updateUniformf( string shader_name, char* name, float f )
+{
+	if( shaders_map.find( shader_name ) != shaders_map.end() )
+	{
+		int s = shaders_map[shader_name];
+		shaders[s].shader->updateUniformf( name, f );
+	}
+	else
+	{
+		log_manager->log( LogManager::LERROR, "Shader \"%s\" not registered in "
+											  "GLSL Manager, function: updateUniformf.",
+											  shader_name.c_str()				);
+	}
+}
+//
+//=======================================================================================
+//
+void GlslManager::updateUniformMatrix( string	shader_name,
+									  char*		name,
+									  float*	value,
+									  int		size
+									)
+{
+	if( shaders_map.find( shader_name ) != shaders_map.end() )
+	{
+		int s = shaders_map[shader_name];
+		shaders[s].shader->updateUniformMatrix( name, value, size );
+	}
+	else
+	{
+		log_manager->log( LogManager::LERROR, "Shader \"%s\" not registered in "
+											  "GLSL Manager, function updateUniformMatrix.",
+											  shader_name.c_str()				);
+	}
+}
+//
+//=======================================================================================
+//
 unsigned int GlslManager::getId( string shader_name )
 {
 	if( shaders_map.find( shader_name ) != shaders_map.end() )

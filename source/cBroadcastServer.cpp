@@ -94,8 +94,9 @@ void broadcast_server::on_message(connection_hdl hdl, server::message_ptr msg)
     		{
     			type = val.str().data()[0];
 
-    			//std::cout << "Type  "<<type<<std::endl;
     			/*
+    			std::cout << "Type  "<<type<<std::endl;
+
 				switch(type){
 				case MOUSE_EVENT:
 					std::cout << "MOUSE_EVENT "<<std::endl;
@@ -186,9 +187,9 @@ void broadcast_server::on_message(connection_hdl hdl, server::message_ptr msg)
 
 						*/
 
-						//needMoreFrames = true;
+						needMoreFrames = true;
 						//stop = false;
-						pthread_mutex_unlock (pc_MutexObj);
+						//pthread_mutex_unlock (pc_MutexObj);
 				}
     		}
     		if (val.str().compare("GiveMeMore") == 0 || val.str().compare("STSIM")==0 )

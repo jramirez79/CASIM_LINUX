@@ -51,6 +51,8 @@ void findPlane( float v0[3], float v1[3], float v2[3] )
       plane[SB] = -(vec0[SX] * vec1[SZ] - vec0[SZ] * vec1[SX]);
       plane[SC] = vec0[SX] * vec1[SY] - vec0[SY] * vec1[SX];
       plane[SD] = -(plane[SA] * v0[SX] + plane[SB] * v0[SY] + plane[SC] * v0[SZ]);
+
+      ///cout<<"****************NORMAL PLANE "<<plane[SA]<<","<<plane[SB]<<","<<plane[SC]<<"****************************"<<endl;
 }
 
 

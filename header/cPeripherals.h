@@ -602,11 +602,17 @@ void cameraChanged(){
 		CanvasSizeMts = aux3;
 		DistCam = (CanvasSizeMts / tan(45.0*0.5))*scalfac;
 		//glsl_manager->setUniformf("depth_rect","z_Far",(DistCam/scalfac));
-		glsl_manager->setUniformf("instancing_culled_rigged","zNear",DistCam*100.0);
-		glsl_manager->setUniformf("instancing_culled_rigged","zFar",camera->getFrustum()->getFarD());
-		glsl_manager->setUniformf("instancing_culled_rigged_shadow","zNear",DistCam*100.0);
-		glsl_manager->setUniformf("instancing_culled_rigged_shadow","zFar",camera->getFrustum()->getFarD());
+		glsl_manager->vZFar 	= DistCam*100.0;
+		glsl_manager->vZNear	= 100.0;
 
+		/*
+		glsl_manager->updateUniformf("instancing_culled_rigged","zNear",DistCam*100.0);
+		glsl_manager->updateUniformf("instancing_culled_rigged","zFar",);
+
+
+		glsl_manager->updateUniformf("instancing_culled_rigged_shadow","zNear",DistCam*100.0);
+		glsl_manager->updateUniformf("instancing_culled_rigged_shadow","zFar",camera->getFrustum()->getFarD());
+		*/
 		//cout<<"Canvas Size Mts "<<CanvasSizeMts<<" DistCam "<<DistCam<<endl;
 	}
 

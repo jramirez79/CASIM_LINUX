@@ -6,8 +6,8 @@
 
 #define DEG2RAD			0.01745329251994329576
 
-attribute vec2			texCoord0;
-attribute vec3			normalV;
+in vec2			texCoord0;
+in vec3			normalV;
 
 uniform sampler2DArray	riggingMT;
 uniform sampler2DArray	animationMT;
@@ -17,6 +17,7 @@ uniform samplerBuffer	posTextureBuffer;
 uniform float			zNear;
 uniform float			zFar;
 
+
 uniform mat4			ViewMat4x4;
 uniform mat4			ProjMat4x4;
 uniform mat4			ShadowMat4x4;
@@ -25,7 +26,7 @@ uniform int				AGENTS_NPOT;
 uniform int				ANIMATION_LENGTH;
 uniform int				STEP;
 uniform float			lod;
-varying	float			depthZ;
+out	float				depthZ;
 
 mat4 cenital = mat4( 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 );
 mat4 azimuth = mat4( 1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1 );
@@ -99,6 +100,8 @@ mat4 matFromMT( sampler2DArray tex, float boneID, float frame )
 void main( void )
 {
 	gl_TexCoord[ 0 ].st		= texCoord0.xy;
+	
+	float height			= 1.0f;
 
 	int ss,tt;
 	vec4 ids				= texelFetchBuffer( idsTextureBuffer, gl_InstanceID );
@@ -112,6 +115,7 @@ void main( void )
 
 	float f = ids.x;	
 	vec3 weightVal			= texture2DArray( riggingMT, vec3(gl_TexCoord[0].st, 1) ).rgb;
+	
 	vec2 disp				= 1.0 - texture2D_bilinear2(	riggingMT, 
 															2, 
 															gl_TexCoord[0].st, 
@@ -614,20 +618,40 @@ void main( void )
 		normal  = (weightVal.g * matR_Foot + weightVal.r * matR_Calf + weightVal.b * matR_Toe0) * normal;
 	}
 
+
+	mat4 rotOrMat4x4		= rotationToMatrix( rotation );
 	mat4 transMat4x4		= mat4( 1.0 );
 	transMat4x4[ 3 ][ 0 ]	= position.x;								// Locate whole model's instance.
 	transMat4x4[ 3 ][ 1 ]	= position.y;								// Locate whole model's instance.
 	transMat4x4[ 3 ][ 2 ]	= position.z;								// Locate whole model's instance.
-	mat4 modelViewProjMat	= (ProjMat4x4 * ViewMat4x4 * transMat4x4);	// Create model's View Matrix.
-
-
-
-	vec4 P					= (modelViewProjMat *ShadowMat4x4 * tempva );
+	//mat4 modelViewProjMat	= (ProjMat4x4 * ViewMat4x4 * transMat4x4);	// Create model's View Matrix.
+	mat4 modelViewProjMat	= (ProjMat4x4 * ViewMat4x4 );	// Create model's View Matrix.
 	
+	tempva					= rotOrMat4x4 * tempva;	
+	
+	vec3 normalP			= vec3(0.0,1.0,0.0);
+	//vec3 lightVect			= vec3(1.0,1.0,1.0);
+	
+	//lightVect 				= normalize(lightVect);
+	vec3 lightVect			= normalize(camPos - tempva.xyz);
+		
+	float sizePr			= dot(normalP,tempva.xyz) / dot(normalP,lightVect);
+	
+	sizePr					= abs(sizePr);
+	
+	tempva					= tempva - vec4(lightVect.xyz*sizePr,0.0);
+	tempva 					= transMat4x4 * tempva;
+	
+	
+	
+	//depthZ					= (10000.0 - tempva.z )/(30000.0-10000.0);		//works Properly
+	
+	depthZ					= (zNear - tempva.z )/(zFar - zNear);
+	
+
+	//vec4 P					= (modelViewProjMat *ShadowMat4x4 * tempva );
+	vec4 P					= (modelViewProjMat * tempva );
+		
 	P						= P/P.w;
 	gl_Position				= P;
-	
-	
-	//depthZ					= (gl_Position.y- zNear)/(zFar - zNear);
-	depthZ					= gl_Position.x/2.0;
 }
