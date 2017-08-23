@@ -53,7 +53,7 @@ bool				doHeightAndDisplacement	= true;
 bool				doPatterns				= true;
 bool				doColor					= true;
 bool				doFacial				= true;
-bool				webScktsFlg 			= false;
+bool				webScktsFlg 			= true;
 
 #endif
 //<-BOOL

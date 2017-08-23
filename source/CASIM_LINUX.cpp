@@ -186,7 +186,7 @@ void sendReceiveFrames (void)
 		//cout<<"*********************** sended  culled "<<" pid "<<pid<<" ************************"<<endl;
 		if (culling[0] != culling[1] ){
 			MPI_Send ((float*)colorPixels, pixelSize, MPI_BYTE, 0, 0, MPI_COMM_WORLD); // master pID = 0
-		//	cout<<"*********************** sended  colorPixels "<<" pid "<<pid<<" ************************"<<endl;
+			//cout<<"*********************** sended  colorPixels "<<" pid "<<pid<<" ************************"<<endl;
 		}
 	}
 	else
@@ -255,23 +255,39 @@ void captureScreen (float* pixels, string fboName, string colorTarget, string de
 
 	glPushMatrix();
 
+	//glsl_manager->updateUniformf("instancing_culled_rigged","ZBufFlg",1);
+	//glsl_manager->updateUniformf("instancing_culled_rigged_shadow","ZBufFlg",1);
+
 	glReadBuffer	( fbo_manager->targets_map[colorTarget]);
 // Reading Color
 	glReadPixels	( 0, 0, w, h, GL_RGBA, GL_FLOAT, pixels );
 
 // Reading Depth
+
+
+
 	glReadPixels	( 0, 0, w, h, GL_DEPTH_COMPONENT, GL_FLOAT, depthPixels );
+	//glReadPixels	( 0, 0, w, h, GL_RGBA, GL_FLOAT, depthPixels );
+
+	//glsl_manager->updateUniformf("instancing_culled_rigged","ZBufFlg",0);
+	//glsl_manager->updateUniformf("instancing_culled_rigged_shadow","ZBufFlg",0);
 
 //	err_manager->getError("END: void captureScreen () ");
 
 	for (i=0, j=0;i<w*h*4;i+=4,++j)
+	//for (i=0;i<w*h*4;i+=4)
 	{
 		//if(pid==2){
 
 			//pixels[i+3] = (-depthPixels[j]*depthVal[0])/(depthPixels[j]*zDiff-depthVal[1]);
 		//pixels[i+3] = (2.0*depthVal[0])/(depthVal[1]+depthVal[0]-depthPixels[j]*zDiff);
 
-			pixels[i+3] = depthPixels[j];
+
+
+		//pixels[i] = pixels[i+1] = pixels[i+2] = pixels[i+3] = depthPixels[j];
+		pixels[i+3] = depthPixels[j];
+
+		//pixels[i+3] = depthPixels[i];
 
 		//}
 		//else
@@ -413,6 +429,9 @@ void updateScreenTextures () // Target: screen color or depth
 //
 //=======================================================================================
 //
+
+
+
 void display_master( void )
 {
 	int i;
@@ -447,10 +466,6 @@ void display_master( void )
 		{
 			glBindTexture(GL_TEXTURE_RECTANGLE, screenTextures[i] );
 			glsl_manager->activate( str_screen_composition_rect );
-			if(i == np-1)
-				glsl_manager->setUniformi(str_screen_composition_rect,"cmp_flg",0);
-			else
-				glsl_manager->setUniformi(str_screen_composition_rect,"cmp_flg",1);
 
 			fbo_manager->renderQuadMA(str_screen_composition_rect, 512,512, 512, 512);
 			glsl_manager->deactivate( str_screen_composition_rect );
@@ -478,11 +493,10 @@ void display_master( void )
 		if (_server_.sendMoreFrames() ){
 			//cout<<"sendMoreFrames true"<<endl;
 
-			unsigned char pixels[fbo_manager->fbos["display_fbo"].fbo_width*fbo_manager->fbos["display_fbo"].fbo_height*3];
+			//unsigned char pixels[fbo_manager->fbos["display_fbo"].fbo_width*fbo_manager->fbos["display_fbo"].fbo_height*3];
+			unsigned char *pixels = fbo_manager->getswpBuffin("display_fbo");
 			//unsigned char pixels[256*512*3];
-			float aux, zFar , zNear;
-			zFar  = 350.0;
-			zNear = 1.0;
+			unsigned char *pixels2 = fbo_manager->getswpBuffout("display_fbo");
 
 			//glReadBuffer (GL_COLOR_ATTACHMENT0_EXT);
 			//cout<<"***************** display_master pid "<<pid<<" Before displayTexture********************"<<endl;
@@ -506,7 +520,23 @@ void display_master( void )
 				pixels[c] = (pixels[c-1]);
 				++c;
 			}*/
-			_server_.sendFrame(pixels);
+
+			/*
+			cout<<" ------------------------------------Out first two bytes ";
+			for(unsigned int cf=0;cf<8;++cf)
+				cout<<" "<<(int)pixels[cf]<<" ";
+			cout<<"----------------------------------------"<<endl;
+			*/
+
+			for(unsigned int c1=0,c2=0;c1<fbo_manager->getswpBuffinLen();++c1,++c2){
+				pixels2[c2]=pixels[c1];
+				pixels2[++c2]=pixels[++c1];
+				pixels2[++c2]=pixels[++c1];
+				pixels2[++c2]=255;
+			}
+
+
+			_server_.sendFrame(pixels2);
 		}
 		//else
 			//cout<<"sendMoreFrames false"<<endl;
@@ -1321,6 +1351,7 @@ void initScreenArrays ()
 	int wh = WIN_WIDTH * WIN_HEIGHT;
 	colorPixels = new myScreenType*[ wh * 4 ];
 	depthPixels	= new myScreenType [ wh ];
+	//depthPixels	= new myScreenType [ wh * 4];
 	pixelSizeMsg 	= wh * 4 * sizeof (myScreenType );
 }
 //
@@ -1630,6 +1661,7 @@ int main ( int argc, char *argv[] )
 
 		colorPixels = new float*[w * h * 4];
 		depthPixels	= new float [w*h];
+		//depthPixels	= new float [w * h * 4];
 		init						( 	argc,argv );
 		err_manager->getError		( "BEFORE_RENDERING::" 			);
 

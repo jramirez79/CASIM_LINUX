@@ -53,7 +53,7 @@ void Animation::loadMultitexture(	string&		dir,
 
 	num_frames	= 0;
 	step		= 0;
-	for( unsigned int f = start_frame; f <= end_frame; f++ )
+	for( unsigned int f = start_frame; f <= end_frame; ++f )
 	{
 		string fName = dir;
 		fName.append( "/" );

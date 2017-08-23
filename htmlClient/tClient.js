@@ -9,10 +9,11 @@ var rttFrameBuffer;
 var rttTexture;
 var depthTexture;
 var renderbuffer;
-var data=[0,1,2];
 var data2=[];
 var data3=[];
 var data4=[];
+var data5=[];
+var data6=[];
 var tmplin=[0,1,2];
 var canvas2;
 var contextCanvas2;
@@ -49,7 +50,7 @@ var S_height = 512;
 
 var initLong = 2.1139643;
 var initLat = 41.3893997;
-var initZoom = 17;
+var initZoom = 15;
 var lat = initLat;
 var long = initLong;
 var zoom = initZoom;
@@ -60,6 +61,8 @@ var initX;
 var initZ;
 var xrect;
 var zrect;
+var xrectAnt;
+var zrectAnt;
 var mtsPerPixel;
 var initflg = true;
 var zFarVar;
@@ -71,6 +74,8 @@ var camDir
 var camOrg;
 var depthflg;
 var ctx;
+var interactFlg = false;
+
 
 function init(){
 	if (window.WebSocket) {
@@ -95,6 +100,7 @@ function init(){
 
 	contextCanvas2 	= canvas2.getContext('2d');
 	ImageData = contextCanvas2.getImageData(0,0,canvas2.width,canvas2.height);
+
 }
 /*----------------------------------------------------------------------------------------------------------------*/
 function connectAndCallbacks ()
@@ -110,7 +116,7 @@ function connectAndCallbacks ()
 	// sets websocket's binary messages as Blob type by default is Blob type
 	//websocket.binaryType = "blob";
 
-	reader.onload		= function(evt) { readBlob		(evt) };
+	reader.onload			= function(evt) { readBlob		(evt) };
 	reader.onloadend	= function(evt) { nextBlob		(evt) };
 	reader.onerror		= function(evt) { fileReaderError 	(evt) };
 
@@ -146,88 +152,31 @@ function send3DElement (modViewMat){
 		setCoords(modViewMat);
     swap = new Uint8Array(coordMsg.buffer);
 
-		//console.log("send3DElement "+swap.length);
 		ImageData3[cnta] = ImageData3[0];
 		ImageData3[0] = 7;
 		++cnta;
 		for(var i=0;i<(swap.length);++i,++cnta)
-        ImageData3[cnta] = swap[i];
-
-    //for(i=0;i<data.length;++i,++cnta,++aux){
-		/*
-		while(cnta<data.length+1){
-    	//ImageData3[cnta] = data[i];
-			ImageData3[cnta] = data4[i];
-			++cnta;
-			/ *
-			if(aux==3){
-    	    ImageData3[cnta] = data4[i-1];
-    	    aux=-1;
-    	} * /
-    }*/
-
-		//console.log( "cnta: "+cnta+" data lenght:"+data.length);
-
-
-
-
-////********************************************************************///////
-    //for(var i=0;i<(swap.length*4);++i,++cnta)
-        //ImageData3[cnta] = swap[i];
-
-////********************************************************************///////
-		//console.log("Coord Buffer "+coordMsg+" ;;;; "+swap+" cnta: "+cnta);
-			//console.log("Distance to ground :"+distance2Ground(lat,zoom)+ "mts from the camera");
-		//console.log("sending data");
-
+				ImageData3[cnta] = swap[i];
 
 	if(!stop)
 		websocket.send(ImageData3);
-		//websocket.send("SendingFrameBuffer");
+
+		//console.log("Sending image Data");
 }
 /*----------------------------------------------------------------------------------------------------------------*/
 // readBlob is called when reader.readAsBinaryString(blob); from onMessage method occurs
 function readBlob (e)
 {
 	//console.log (canvas.width, canvas.height );
-	var i,j=0;
+	//var i,j=0;
 
     // if receiving float images
 	//img = new Float32Array(reader.result);
 
 	// if receiving unsigned byte images
 	img = new Uint8Array(reader.result);
-
-//console.log (imgdata.data.length);
-
-// TODO: send data as  picture format to avoid this:
-
-	//console.log ("result: ", + reader.target.result);
-//	console.log("Blob size ", + reader.result.length + " ", + reader.result[10]);
-//	console.log("Blob size ", + img.length + " ", + img[10]);
-
-
-	// if img is float
-/*
-    for(i=0;i<imgdata.data.length;i+=4)
-	{
-		imgdata.data[i]		= img[j  ] * 255; //.charCodeAt(j);
-		imgdata.data[i+1] 	= img[j+1] * 255; //reader.result.charCodeAt(j+1);
-		imgdata.data[i+2] 	= img[j+2] * 255; //reader.result.charCodeAt(j+2);
-		imgdata.data[i+3] 	= 255;
-		j+=3;
-	}
-*/
-
- 	 for(i=0;i<ImageData.data.length;i+=4)
-	{
-		ImageData.data[i]		= img[j  ] ; //.charCodeAt(j);
-		ImageData.data[i+1] 	= img[j+1] ; //reader.result.charCodeAt(j+1);
-		ImageData.data[i+2] 	= img[j+2] ; //reader.result.charCodeAt(j+2);
-		ImageData.data[i+3] 	= 255;
-		j+=3;
-	}
-
+	ImageData.data.set(img);
+	//console.log("showing frame");
 	contextCanvas2.putImageData(ImageData,0,0);
 
 }
@@ -251,7 +200,7 @@ function onMessage(e)
 				reader.readAsArrayBuffer(blob);
 		}
 		catch(err){
-			console.log("Error "+err.message);
+			console.error();("Error "+err.message);
 		}
 
 
@@ -260,7 +209,7 @@ function onMessage(e)
 	{
 		var img = new Uint8Array(e.data);
 
-		console.log("Array msg:", + img[63] );
+		//console.log("Array msg:", + img[63] );
 
 	}
 
@@ -271,7 +220,7 @@ function onMessage(e)
 // is there is an error
 function onError (e)
 {
-	console.log("Websocket Error: ", e);
+	console.error("Websocket Error: ", e);
 	// Custom functions for handling errors
 	// handleErrors (e);
 }
@@ -289,6 +238,8 @@ function startingConnection()
 
 	websocket.send ("STSIM");
 	stop = false;
+	interactFlg = true;
+	//console.log("Connection---");
 
 }
 /*----------------------------------------------------------------------------------------------------------------*/
@@ -327,6 +278,7 @@ function initGL(){
 	//var shaders;
 	//console.log(map);
 	var zoom_ant = 0;
+	interactFlg = true;
 	//var printsh = 0;
 	var tglslProg;
 	var regTProg = 0;
@@ -337,7 +289,8 @@ function initGL(){
 
 
 	var layer = Tangram.leafletLayer({
-            scene: 'scene_1.yaml',
+            //scene: 'scene_1.yaml',
+						scene: 'scene_1.yaml',
             attribution: '<a href="https://mapzen.com/tangram" target="_blank">Tangram</a> | &copy; OSM contributors | <a href="https://mapzen.com/" target="_blank">Mapzen</a>',
             //logLevel: 'debug',
             preUpdate: function(will_render){
@@ -352,36 +305,36 @@ function initGL(){
         lat = map.getCenter().lat;
         long = map.getCenter().lng;
 
-	var  sizeMap = map.getSize();
+				var  sizeMap = map.getSize();
 
 		//console.log(" map size object "+Geo.metersPerTile(map._zoom));
 
-        if(zoom_ant!=zoom && (zoom>14.0 && zoom<21.0)){
-            if(map._zoom<14)
-                rotAng = 0.0;
-            else if(zoom<17)
-                rotAng = (60.0*zoom-840.0)/3.0;
-            else if(zoom<21)
-                rotAng = (30.0*zoom-270.0)/4.0;
-            else
-                rotAng = 90.0;
+        if(zoom_ant!=zoom && (zoom>14.0)){
+          if(map._zoom<14)
+              rotAng = 0.0;
+          else if(zoom<17)
+              rotAng = (60.0*zoom-840.0)/3.0;
+          else if(zoom<21)
+              rotAng = (30.0*zoom-270.0)/4.0;
+          else
+              rotAng = 90.0;
 
-	    //rotAng = 0.0;
+			    //rotAng = 0.0;
 
-	    vec3.rotateX(camDir,camDirIni,camOrg,-rotAng);
-	    layer.scene.config.lights.light1.direction = [camDir[0],camDir[1],camDir[2]];
-			//layer.scene.config.lights.light1.visible = true;
-			//layer.scene.config.lights.light2.visible = false;
-      layer.scene.config.styles.customPosition.shaders.uniforms.u_angle = rotAng;
-	    //layer.scene.config.styles.customPosition.shaders.uniforms.u_mode = depthflg;
+			    vec3.rotateX(camDir,camDirIni,camOrg,-rotAng);
+			    layer.scene.config.lights.light1.direction = [camDir[0],camDir[1],camDir[2]];
+					//layer.scene.config.lights.light1.visible = true;
+					//layer.scene.config.lights.light2.visible = false;
+		      layer.scene.config.styles.customPosition.shaders.uniforms.u_angle = rotAng;
+			    //layer.scene.config.styles.customPosition.shaders.uniforms.u_mode = depthflg;
 
-      zoom_ant = zoom;
-      layer.scene.config.cameras.camera1=zoom_ant;
-      layer.scene.config.cameras.camera2=zoom_ant;
-      layer.scene.config.cameras.camera3=zoom_ant;
-	    zFarVar = layer.scene.view.meters_per_pixel*256;
-	    layer.scene.config.styles.customPosition.shaders.uniforms.u_zFar = zFarVar;
-
+		      zoom_ant = zoom;
+		      layer.scene.config.cameras.camera1=zoom_ant;
+		      layer.scene.config.cameras.camera2=zoom_ant;
+		      layer.scene.config.cameras.camera3=zoom_ant;
+			    zFarVar = layer.scene.view.meters_per_pixel*256;
+			    layer.scene.config.styles.customPosition.shaders.uniforms.u_zFar = zFarVar;
+					interactFlg = true;
 			}
 
 
@@ -417,34 +370,29 @@ function initGL(){
             postUpdate: function(didRender) {
 		if (didRender) {
 
-            //if(regTProg){
-              //  releaseTextures()
-                //initShaders();
-                //initBuffers();
-                //createDepthImageFromTexture(gl,depthTexture,canvas3.width,canvas3.height);
-                //createImageFromTexture(gl,rttTexture,canvas3.width,canvas3.height);
-                //disShader();
-                //gl.useProgram(tglslProg);
 
-
-
-
-
-		if(depthflg){
-		  	depthflg = 0;
-		  	createDepthImageFromScreen(gl,canvas3.width,canvas3.height);
-				//console.log("release texture");
-				releaseTextures();
-				send3DElement(layer.scene.view.matrices.model_view32);
-				layer.scene.config.lights.light1.visible= false;
-				layer.scene.config.lights.light2.visible= true;
+		if(interactFlg){
+			//console.log("interactFlg code ");
+			if(depthflg){
+			  	depthflg = 0;
+			  	createDepthImageFromScreen(gl,canvas3.width,canvas3.height);
+					//console.log("release texture");
+					releaseTextures();
+					send3DElement(layer.scene.view.matrices.model_view32);
+					layer.scene.config.lights.light1.visible= false;
+					layer.scene.config.lights.light2.visible= true;
+					interactFlg = false;
+			}
+			else{
+			   	depthflg = 1;
+			   	createImageFromScreen(gl,canvas3.width,canvas3.height);
+					//createImageFromScreen(gl,canvas3.width,canvas3.height);
+				 	layer.scene.config.lights.light1.visible= true;
+					layer.scene.config.lights.light2.visible= false;
+			}
 		}
-		else{
-		   	depthflg = 1;
-		   	//createImageFromScreen(gl,canvas3.width,canvas3.height);
-			 	layer.scene.config.lights.light1.visible= true;
-				layer.scene.config.lights.light2.visible= false;
-		}
+
+
 
 
 
@@ -452,10 +400,17 @@ function initGL(){
 			initX = layer.scene.view.center.meters.x;
 			initZ = layer.scene.view.center.meters.y;
 			initflg = false;
+			interactFlg = true;
 		}
 
 		xrect = layer.scene.view.center.meters.x - initX;
 		zrect = layer.scene.view.center.meters.y - initZ;
+
+		if(xrect!=xrectAnt || zrect!=zrectAnt)
+				interactFlg = true;
+
+		xrectAnt = xrect;
+		zrectAnt = zrect;
 
 		//console.log(" xrect: "+xrect+" zrect: "+zrect+" viewport_height: "+((layer.scene.view.size.css.height*layer.scene.view.meters_per_pixel)/2)+" meters per pixel "+layer.scene.view.meters_per_pixel);
 		//console.log(" viewport Mat: "+layer.scene.view.matrices.model_view32);
@@ -467,7 +422,7 @@ function initGL(){
 		//send3DElement(layer.scene.view.camera.projection_matrix);
             //}
 
-		  ///layer.scene.rebuild();
+		  ///layer.scene.rebuild();*/
              }
           }
         });
@@ -544,8 +499,8 @@ function initCanvas(){
     //alert("Objeto context:"+context);
     ////copy the pixels to a 2D canvas
     ImageData2 = contextCanvas3.createImageData(canvas3.width,canvas3.height);
-    data = new Uint8Array(canvas3.width*canvas3.height*4 + 1);
     ImageData3 = new Uint8Array(canvas3.width*canvas3.height*4 + 93);
+		data5 = new Uint8Array(canvas3.width*canvas3.height*4);
 		ImgDatabffSiz = canvas3.width*canvas3.height*4;
     //ImageData3[0] = 7;
 		coordMsg = new Float32Array(23);
@@ -616,7 +571,8 @@ function initFrameBufferFSH(){
 
 		////attach the texture to the framebuffer object color point
 		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,rttTexture,0);
-
+		gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+		gl.clearColor(1.0, 1.0, 1.0, 1.0);
 }
 /*----------------------------------------------------------------------------------------------------------------*/
 function releaseTextures(){
@@ -637,13 +593,10 @@ function createImageFromTexture(gl,texture,width,height){
 }
 
 function createImageFromScreen(gl,width,height){
-  if(data.length!=width*height*4)
-        data = new Uint8Array(width*height*4);
 
-    gl.readPixels(0,0,width,height,gl.RGBA,gl.UNSIGNED_BYTE,data);
-
-    ImageData2.data.set(data);
-    contextCanvas3.putImageData(ImageData2,0,0);
+	gl.readPixels(0,0,width,height,gl.RGBA,gl.UNSIGNED_BYTE,ImageData3);
+	//putImageinCanvasColor(ImageData3,data4,ImageData2,contextCanvas3,width,height);
+	//ImageData2.data.set(ImageData3);
 }
 /*----------------------------------------------------------------------------------------------------------------*/
 function createDepthImageFromTexture(gl,texture,width,height){
@@ -659,19 +612,43 @@ function createDepthImageFromTexture(gl,texture,width,height){
 }
 
 function createDepthImageFromScreen(gl,width,height){
-  //if(data4.lenght!= width*height*4)
-    //    data4 = new Uint8Array(width*height*4);
 
-    //gl.readPixels(0,0,width,height,gl.RGBA,gl.UNSIGNED_BYTE,data4);
-		gl.readPixels(0,0,width,height,gl.RGBA,gl.UNSIGNED_BYTE,ImageData3);
+	gl.readPixels(0,0,width,height,gl.RGBA,gl.UNSIGNED_BYTE,data5);
+	combineImages(ImageData3,data5,ImgDatabffSiz);
+	//putImageinCanvasColor(ImageData3,data6,ImageData4,contextCanvas4,width,height);
+}
 
-		//for(var cn=0;cn<width*height*4;++cn)
-		//	data4[cn]=ImageData3[cn+93];
+function putImageinCanvas(Image,canvasData,ImageDataC,contextCanvasImg,width,height){
+	for(var cn=0;cn<width*height*4;cn+=4){
+		canvasData[cn]=Image[cn+3];
+		canvasData[cn+1]=Image[cn+3];
+		canvasData[cn+2]=Image[cn+3];
+		canvasData[cn+3]=255;
 
-    //ImageData4.data.set(data4);
-		//ImageData4.data.set(ImageData3);
-    //contextCanvas4.putImageData(ImageData4,0,0);
-		//console.log(ImageData3[263656]+","+ImageData3[263657]+","+ImageData3[263658]+","+ImageData3[263659]+","+ImageData3[263660]);
+		}
+		ImageDataC.data.set(canvasData);
+    contextCanvasImg.putImageData(ImageDataC,0,0);
+}
+
+function combineImages(dataMain,datasec,lenght){
+	var conta = 3;
+	while(conta<lenght){
+		dataMain[conta]=datasec[conta];
+		conta+=4;
+	}
+}
+
+function putImageinCanvasColor(Image,canvasData,ImageDataC,contextCanvasImg,width,height){
+	for(var cn=0;cn<width*height*4;cn+=4){
+		canvasData[cn]=Image[cn];
+		canvasData[cn+1]=Image[cn+1];
+		canvasData[cn+2]=Image[cn+2];
+		canvasData[cn+3]=Image[cn+3];
+
+		}
+		ImageDataC.data.set(canvasData);
+		contextCanvasImg.putImageData(ImageDataC,0,0);
+		//console.log(canvasData[263656]+","+canvasData[263657]+","+canvasData[263658]+","+canvasData[263659]+","+canvasData[263660]);
 }
 
 /*----------------------------------------------------------------------------------------------------------------*/

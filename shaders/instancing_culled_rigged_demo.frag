@@ -20,6 +20,7 @@ uniform float doColor;
 uniform float doPatterns;
 uniform float doFacial;
 uniform sampler2DArray facialMT;
+uniform int	  ZBufFlg;
 
 uniform sampler2DRect pattern_table;	//LINE, NUM_COLORS, PATTERN, SEASON.
 uniform sampler2DRect color_table;		//RGBA0...RGBA10.

@@ -100,6 +100,8 @@ bool Model3D::init( bool gen_vbos )
 	afn.append( "/" );
 	afn.append( fileName );
 
+	//y_max = 0.0;
+
 #ifdef ASSIMP_PURE_C
 	//char cCurrentPath[1000];
 	//getcwd( cCurrentPath, sizeof(cCurrentPath) );
@@ -498,6 +500,23 @@ void Model3D::recursive_gather_data	(	const struct aiScene*	sc,
 				vert.location[2] = mesh->mVertices[index].z * scale;
 				vert.location[3] = 1.0f;
 
+				/*
+				//cout<<"*******************vertices Model3D x "<<vert.location[0]<<" y "<<vert.location[1]<<" z "<<vert.location[2]<<" scale "<<scale<<endl;
+				vec3 P = 	 vec3(vert.location[0],vert.location[1],vert.location[2]);
+				vec3 light = vec3(-1.0,-1.0,-1.0);
+				vec3 normP = vec3(0.0,1.0,0.0);
+
+				light = normalize(light);
+				float fact = dot(normP,P)/dot(normP,light);
+				fact = abs(fact);
+				vec3 rPro = P + (light*fact);
+				//cout<<"*******************vertices result x "<<rPro.x<<" y "<<rPro.y<<" z "<<rPro.z<<" fact "<<fact<<endl;
+
+				vert.location[0] = rPro.x;
+				vert.location[1] = rPro.y;
+				vert.location[2] = rPro.z;
+				vert.location[3] = 1.0f;
+				*/
 				//->LOCATIONS_MAP
 				float lKey = vert.location[0] + vert.location[1] + vert.location[2];
 				unsigned int locationIndex = 0;

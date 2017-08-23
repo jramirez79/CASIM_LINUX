@@ -81,7 +81,7 @@ void broadcast_server::on_message(connection_hdl hdl, server::message_ptr msg)
 
 	int keyMask;
 
-	//std::cout << "broadcast_server::on_message "<<numMsg++<<std::endl;
+	///std::cout << "broadcast_server::on_message "<<numMsg++<<std::endl;
 
     for (auto it : m_connections)
     {
@@ -94,8 +94,10 @@ void broadcast_server::on_message(connection_hdl hdl, server::message_ptr msg)
     		{
     			type = val.str().data()[0];
 
-    			//std::cout << "Type  "<<type<<std::endl;
     			/*
+    			std::cout << "Type  "<<type<<std::endl;
+
+
 				switch(type){
 				case MOUSE_EVENT:
 					std::cout << "MOUSE_EVENT "<<std::endl;
@@ -110,6 +112,7 @@ void broadcast_server::on_message(connection_hdl hdl, server::message_ptr msg)
 					std::cout << "  "<<type<<std::endl;
 				}
 				*/
+
 
 				if (type == MOUSE_EVENT)
 				{
@@ -153,7 +156,7 @@ void broadcast_server::on_message(connection_hdl hdl, server::message_ptr msg)
 					//std::cout << "rstate: " << val.str().data()[1] << "cstate: " << keyboardHandler->getState() << std::endl;
 				}
 				else if(type == CLIENT_FRAME_EVENT){
-					pthread_mutex_lock (pc_MutexObj);
+
 					//std::cout<<"CLIENT_FRAME_EVENT first byte of data is "<< (unsigned int)((unsigned char)val.str().data()[0])<<std::endl;
 
 
@@ -186,9 +189,8 @@ void broadcast_server::on_message(connection_hdl hdl, server::message_ptr msg)
 
 						*/
 
-						//needMoreFrames = true;
+					//	needMoreFrames = true;
 						//stop = false;
-						pthread_mutex_unlock (pc_MutexObj);
 				}
     		}
     		if (val.str().compare("GiveMeMore") == 0 || val.str().compare("STSIM")==0 )
@@ -203,7 +205,7 @@ void broadcast_server::on_message(connection_hdl hdl, server::message_ptr msg)
     		if ( val.str().compare("END  ") == 0 )
     		{
     			stop = true;
-    			std::cout << "dedos";
+    			//std::cout << "dedos";
     			needMoreFrames = false;
     		}
     	}
@@ -213,6 +215,7 @@ void broadcast_server::on_message(connection_hdl hdl, server::message_ptr msg)
     					<< "(" << e.message() << ")" << std::endl;
 		}
     }
+	//std::cout << "broadcast_server::on_message END"<<std::endl;
 
 }
 //

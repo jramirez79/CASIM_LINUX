@@ -1,67 +1,46 @@
-scene:
-    animated: true
-
 cameras:
     camera1:
         type: perspective
-        fov: 45
-        zoom: 17
-        active: false
-    camera2:
-        type: isometric
-        axis: [0, 1]
-        zoom: 17
-        active: false
-    camera3:
-        type: flat
-        zoom: 17
-        active: true
 
 lights:
     light1:
         type: directional
         direction: [0, 1, -.5]
-        diffuse: .1
-        ambient: .3
-    light2:
-        visible: true
-        type: point
-        position: [-74.0170, 40.7031, 100]
-        origin: world
-        ambient: .3
-        diffuse: 1
-        specular: .2
+        diffuse: .3
+        ambient: 1
 
 sources:
-    osm:
+    mapzen:
         type: TopoJSON
-        url: https://tile.mapzen.com/mapzen/vector/v1/all/{z}/{x}/{y}.topojson?api_key=mapzen-QF1osLn
+        url: https://tile.mapzen.com/mapzen/vector/v1/all/{z}/{x}/{y}.topojson
+        url_params:
+            api_key: mapzen-tDHBHDp
         max_zoom: 16
 
 layers:
     earth:
-        data: { source: osm }
+        data: { source: mapzen }
         draw:
             polygons:
                 order: function() { return feature.sort_rank; }
                 color: '#ddeeee'
 
     landuse:
-        data: { source: osm }
+        data: { source: mapzen }
         draw:
             polygons:
                 order: function() { return feature.sort_rank; }
                 color: '#aaffaa'
 
     water:
-        data: { source: osm }
+        data: { source: mapzen }
         draw:
             polygons:
                 order: function() { return feature.sort_rank; }
-                color: '#003366'
+                color: '#88bbee'
 
     roads:
-        data: { source: osm }
+        data: { source: mapzen }
         filter:
             not: { kind: [path, rail, ferry] }
         draw:
@@ -91,7 +70,7 @@ layers:
                     width: 5
 
     buildings:
-        data: { source: osm }
+        data: { source: mapzen }
         draw:
             polygons:
                 order: function() { return feature.sort_rank; }

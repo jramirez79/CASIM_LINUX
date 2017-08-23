@@ -278,6 +278,10 @@ public:
 	unsigned int				getWidth					(	string			fbo_name				);
 	unsigned int				getHeight					(	string			fbo_name				);
 	void						report						(	void									);
+	unsigned char*				getswpBuffin				(	string fbo_name							);
+	unsigned char*				getswpBuffout				(	string fbo_name							);
+	unsigned int				getswpBuffinLen				(	void									);
+	unsigned int				getswpBuffOutLen			(	void									);
 #include "cPostProcFx.h"
 public:
 	map<string, LocalFbo>		fbos;
@@ -285,6 +289,7 @@ public:
 	map<string, LocalFbo>		tex_fbo_map;
 	ProjectionManager*			proj_manager;
 	map<string, GLenum>			targets_map;
+
 
 private:
 	vector<InputFbo*>			inputs;
@@ -297,6 +302,10 @@ private:
 	bool						fboOK;
 	vector<GLuint>				pushed_tex_offsets;
 	vector<GLuint>				pushed_tex_targets;
+	unsigned char*				swpPixelsIn;
+	unsigned int				swpPixelsInLen;
+	unsigned char*				swpPixelsOut;
+	unsigned int				swpPixelsOutLen;
 
 private:
 	void						typicalTextureSettings		 (	char*			msg,

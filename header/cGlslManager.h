@@ -71,6 +71,19 @@ public:
 	void				setUniformMatrix				( char*			name,
 														  float*		value,
 														  int			size					);
+	void				updateUniformi					( char*			name,
+														  int			value					);
+	void				updateUniformf					( char*			name,
+														  float			value					);
+	void				updateUniformiv					( char*			name,
+														  int*			value,
+														  int			size					);
+	void				updateUniformfv					( char*			name,
+														  float*		value,
+														  int			size					);
+	void				updateUniformMatrix				( char*			name,
+														  float*		value,
+														  int			size					);
 	void				setBindableUniform				( char*			name,
 														  unsigned int	buffer					);
 	void				unSetBindableUniform			( char*			name					);
@@ -190,8 +203,23 @@ public:
 															char*					name,
 															float*					value,
 															int						size				);
+	void							updateUniformi		(string					shader_name,
+															char*					name,
+															int						i					);
+	void							updateUniformf		(	string					shader_name,
+															char*					name,
+															float					f					);
+	void							updateUniformMatrix	(	string					shader_name,
+															char*					name,
+															float*					value,
+															int						size				);
+
 	bool							update				(	void										);
 	bool							setup_shaders		(	void										);
+
+
+	float							vZFar;
+	float							vZNear;
 private:
 	typedef struct
 	{
@@ -205,6 +233,7 @@ private:
 	vector<Shader>					shader_stack;
 	vector<ShaderObject*>			shader_objects;
 	vector<InputShader*>			inputs;
+
 private:
 	void							update_shaders		(	void										);
 

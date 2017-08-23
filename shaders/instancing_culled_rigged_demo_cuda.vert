@@ -124,9 +124,7 @@ void main( void )
 	ti						= vec3( float(ss),float(tt), 0.0 );
 	vec4 position			= vec4( inputv.x, 5.0, inputv.z, 1.0 );
 	vec2 rotation			= vec2( 0.0, inputv.w );
-	
-	
-	
+		
 	// Model orientation.
 
 	float f = ids.x;	
@@ -191,11 +189,13 @@ void main( void )
 	vec3 zoneVal			= texture2DArray( riggingMT,  vec3(gl_TexCoord[0].st, 0) ).rgb;			// Current zone.
 	int zone1				= int( round( zoneVal.r * 255.0 ) );
 
-	mat4 transMat4x4		= rotationToMatrix( rotation );											// Orient whole model's instance.
+	mat4 rotOrMat4x4		= rotationToMatrix( rotation );											// Orient whole model's instance.
+	mat4 transMat4x4		= mat4(1.0);		
 	transMat4x4[ 3 ][ 0 ]	= position.x;															// Locate whole model's instance.
 	transMat4x4[ 3 ][ 1 ]	= position.y;															// Locate whole model's instance.
-	transMat4x4[ 3 ][ 2 ]	= position.z;												// Locate whole model's instance.
-	mat4 modelViewMat		= ViewMat4x4 * transMat4x4;												// Create model's View Matrix.
+	transMat4x4[ 3 ][ 2 ]	= position.z;															// Locate whole model's instance.
+		
+	//mat4 modelViewMat		= ViewMat4x4 * transMat4x4;												// Create model's View Matrix.
 	mat3 myNormalMat		= mat3( ViewMat4x4[0], ViewMat4x4[1], ViewMat4x4[2] ) * gl_NormalMatrix;
 	vec4 tempva				= vec4( 0.0, 0.0, 0.0, 0.0 );
 	float rem_rgb			= (1.0 - (weightVal.r + weightVal.g + weightVal.b))/3.0;
@@ -435,7 +435,7 @@ void main( void )
 		normal  = (weightVal.g * matR_Foot + weightVal.r * matR_Calf + weightVal.b * matR_Toe0) * normal;
 	}
 */
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	if(zone1==1){
 		mat4 matPelvis			=	matFromMT( animationMT,  0.0, FRAME );
@@ -691,14 +691,46 @@ void main( void )
 	}
 	
 	tempva.xyz *= height;
-
-	vec4 P					= (modelViewMat * tempva);
+		
+	//mat4 modelViewMat		= ViewMat4x4 * transMat4x4;						// Create model's View Matrix.
+	
+	tempva  				= rotOrMat4x4 * tempva;
+	
+	vec3 normalP			= vec3(0.0,1.0,0.0);
+	//vec3 lightVect			= vec3(1.0,1.0,1.0);
+	
+	//lightVect 				= normalize(lightVect);
+	
+	vec3 lightVect			= normalize(camPos - tempva.xyz);
+	
+		
+	float sizePr			= dot(normalP,tempva.xyz) / dot(normalP,lightVect);
+	
+	sizePr					= abs(sizePr);
+	
+	
+	//tempva					= tempva - vec4(lightVec.xyz*sizePr,0.0);
+	tempva 					= transMat4x4 * tempva;
+	
+	//depthZ					= (zNear - tempva.z)/(zFar - zNear);
+	//depthZ					= (4096 - tempva.z)*0.5/4096;
+	
+	//vec4 P					= (modelViewMat * tempva);
+			
+	vec4 P					= (ViewMat4x4 * tempva);
+	
+	
+	
+	
 	lightVec				= normalize( camPos - P.xyz );
 	P						= P/P.w;
+	
+	//depthZ					= (4096 - P.z)*0.5/4096;
+	depthZ					= (-0.5*P.z)/zFar	;
+	
 	gl_Position				= gl_ProjectionMatrix * P;
-	//gl_Position 			= P;
+	//depthZ					= (gl_Position.z- zNear)/(zFar - zNear);
 	N						= normalize(gl_NormalMatrix * normal.xyz);
 	normalColor				= vec4(disp.r, disp.r, disp.r, 1.0);
 	
-	depthZ					= (gl_Position.z- zNear)/(zFar - zNear);
 }

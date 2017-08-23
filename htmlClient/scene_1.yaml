@@ -4,16 +4,16 @@ scene:
 cameras:
     camera1:
         type: perspective
-        zoom: 17
+        zoom: 19
         active: true
     camera2:
         type: isometric
         axis: [0, 1]
-        zoom: 17
+        zoom: 19
         active: false
     camera3:
         type: flat
-        zoom: 17
+        zoom: 19
         active: false
 
 lights:
@@ -33,14 +33,16 @@ lights:
         specular: .2
 
 sources:
-    osm:
+  mapzen:
         type: TopoJSON
-        url: https://tile.mapzen.com/mapzen/vector/v1/all/{z}/{x}/{y}.topojson?api_key=mapzen-QF1osLn
-        max_zoom: 16
+        url: https://tile.mapzen.com/mapzen/vector/v1/all/{z}/{x}/{y}.topojson
+        url_params:
+            api_key: mapzen-tDHBHDp
+        max_zoom: 22
 
 layers:
     earth:
-        data: { source: osm }
+        data: { source: mapzen }
         draw:
             polygons:
                 order: function() { return feature.sort_rank; }
@@ -48,7 +50,7 @@ layers:
                 color: '#ddeeee'
 
     landuse:
-        data: { source: osm }
+        data: { source: mapzen }
         draw:
             polygons:
                 order: function() { return feature.sort_rank; }
@@ -56,7 +58,7 @@ layers:
                 color: '#aaffaa'
 
     water:
-        data: { source: osm }
+        data: { source: mapzen }
         draw:
             polygons:
                 order: function() { return feature.sort_rank; }
@@ -64,7 +66,7 @@ layers:
                 color: '#003366'
 
     roads:
-        data: { source: osm }
+        data: { source: mapzen }
         filter:
             not: { kind: [path, rail, ferry] }
         draw:
@@ -97,7 +99,7 @@ layers:
                     width: 5
 
     buildings:
-        data: { source: osm }
+        data: { source: mapzen }
         draw:
             polygons:
                 order: function() { return feature.sort_rank; }
@@ -185,8 +187,7 @@ styles:
 
                     //position.z = (2.0*logZ -1.0)*position.w;
                     //f_zBuff = logZ;
-                    f_zBuff = (1.0 - (position.z/u_zFar))*0.5;
-
+                    f_zBuff = (1.0 - ((position.z/u_zFar)*0.8))*0.5;
 
                 normal: |
                     normal = (vec4(normal,1) * rotationMatrix(vec3(1.0,0.0,0.0), radians(-u_angle))).xyz;
@@ -196,4 +197,5 @@ styles:
                     float value = f_zBuff;
 
                     if(u_mode==1.0)
-                      color =  vec4(color.r,color.g,color.b,value);
+                      //color =  vec4(vec3(value),1.0);
+                      color =  vec4(vec3(color.rgb),value);

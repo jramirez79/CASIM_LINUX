@@ -840,7 +840,8 @@ void CharacterGroup::draw_instanced_culled_rigged	(	Camera*					cam,
 		//printf( "[%d]: %03d\t", LOD, vbo_lods[LOD].primitivesWritten );
 		if( shadows )
 		{
-			character_model[LOD_LO]->draw_instanced_culled_rigged_shadow(	cam,
+			character_model[LOD]->draw_instanced_culled_rigged_shadow(	cam,
+			//character_model[LOD_LO]->draw_instanced_culled_rigged_shadow(	cam,
 																			frame,
 																			vbo_lods[LOD].primitivesWritten,
 																			_AGENTS_NPOT,
@@ -903,7 +904,8 @@ void CharacterGroup::draw_instanced_culled_rigged	(	Camera*					cam,
 		//printf( "[%d]: %03d\t", LOD, vbo_lods[LOD].primitivesWritten );
 		if( shadows )
 		{
-			character_model[LOD_LO]->draw_instanced_culled_rigged_shadow(	cam,
+			character_model[LOD]->draw_instanced_culled_rigged_shadow(	cam,
+			//character_model[LOD_LO]->draw_instanced_culled_rigged_shadow(	cam,
 																			frame,
 																			vbo_lods[LOD].primitivesWritten,
 																			_AGENTS_NPOT,
@@ -982,7 +984,8 @@ void CharacterGroup::draw_instanced_culled_rigged	(	Camera*					cam,
 		//printf( "[%d]: %03d\t", LOD, vbo_lods[LOD].primitivesWritten );
 		if( shadows )
 		{
-			character_model[LOD_LO]->draw_instanced_culled_rigged_shadow(	cam,
+			character_model[LOD]->draw_instanced_culled_rigged_shadow(	cam,
+			//character_model[LOD_LO]->draw_instanced_culled_rigged_shadow(	cam,
 																			frame,
 																			vbo_lods[LOD].primitivesWritten,
 																			_AGENTS_NPOT,
@@ -1048,7 +1051,8 @@ void CharacterGroup::draw_instanced_culled_rigged	(	Camera*					cam,
 		//printf( "[%d]: %03d\t", LOD, vbo_lods[LOD].primitivesWritten );
 		if( shadows )
 		{
-			character_model[LOD_LO]->draw_instanced_culled_rigged_shadow(	cam,
+			//character_model[LOD_LO]->draw_instanced_culled_rigged_shadow(	cam,
+			character_model[LOD]->draw_instanced_culled_rigged_shadow(	cam,
 																			frame,
 																			vbo_lods[LOD].primitivesWritten,
 																			_AGENTS_NPOT,

@@ -1526,6 +1526,8 @@ void VboManager::render_instanced_culled_rigged_vbo4(	Camera*			cam,
 														float			doColor,
 														float			doFacial					)
 {
+
+	//cout<<"**************************************************render_instanced_culled_rigged_vbo4******************************************"<<endl;
 	glsl_manager->activate( instancing_culled_rigged_shader_name );
 	{
 	    string name;
@@ -1570,6 +1572,16 @@ void VboManager::render_instanced_culled_rigged_vbo4(	Camera*			cam,
                                     (char*)name.c_str(),
                                     &cam->getPosition()[0],
                                     3								    );
+		name = string( "zNear"	);
+		glsl_manager->setUniformf(  instancing_culled_rigged_shader_name,
+									(char*)name.c_str(),
+									glsl_manager->vZNear			);
+		//cout<<"-------------glsl_manager->vZNear------------"<<glsl_manager->vZNear<<endl;
+		name = string( "zFar"	);
+		glsl_manager->setUniformf(  instancing_culled_rigged_shader_name,
+									(char*)name.c_str(),
+									glsl_manager->vZFar				);
+		//cout<<"-------------glsl_manager->vZFar------------"<<glsl_manager->vZFar<<endl;
 		glsl_manager->setUniformMatrix( instancing_culled_rigged_shader_name,
 										  (char*)instancing_culled_rigged_viewmat_name.c_str(),
 										  viewMat,
@@ -1999,6 +2011,8 @@ void VboManager::render_instanced_culled_rigged_vbo5(	Camera*			cam,
 														float*			shadowMat,
 														bool			wireframe					)
 {
+
+	//cout<<"**************************************************render_instanced_culled_rigged_vbo5******************************************"<<endl;
 	glsl_manager->activate( instancing_culled_rigged_shadow_shader_name );
 	{
 	    string name;
@@ -2027,6 +2041,15 @@ void VboManager::render_instanced_culled_rigged_vbo5(	Camera*			cam,
                                     (char*)name.c_str(),
                                     &cam->getPosition()[0],
                                     3								    );
+		name = string( "zNear"	);
+		glsl_manager->setUniformf(  instancing_culled_rigged_shadow_shader_name,
+		                            (char*)name.c_str(),
+		                            glsl_manager->vZNear				);
+		name = string( "zFar"	);
+		glsl_manager->setUniformf(  instancing_culled_rigged_shadow_shader_name,
+									(char*)name.c_str(),
+									glsl_manager->vZFar				);
+
 		glsl_manager->setUniformMatrix( instancing_culled_rigged_shadow_shader_name,
 										  (char*)instancing_culled_rigged_shadow_viewmat_name.c_str(),
 										  viewMat,
