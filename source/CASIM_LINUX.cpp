@@ -282,11 +282,15 @@ void captureScreen (float* pixels, string fboName, string colorTarget, string de
 			//pixels[i+3] = (-depthPixels[j]*depthVal[0])/(depthPixels[j]*zDiff-depthVal[1]);
 		//pixels[i+3] = (2.0*depthVal[0])/(depthVal[1]+depthVal[0]-depthPixels[j]*zDiff);
 
+<<<<<<< HEAD
 
 
 		//pixels[i] = pixels[i+1] = pixels[i+2] = pixels[i+3] = depthPixels[j];
 		pixels[i+3] = depthPixels[j];
 
+=======
+			pixels[i+3] = depthPixels[j];
+>>>>>>> 30e048104403fa5ef7bed9d37f608936d5c07194
 		//pixels[i+3] = depthPixels[i];
 
 		//}

@@ -625,6 +625,7 @@ void main( void )
 	transMat4x4[ 3 ][ 1 ]	= position.y;								// Locate whole model's instance.
 	transMat4x4[ 3 ][ 2 ]	= position.z;								// Locate whole model's instance.
 	//mat4 modelViewProjMat	= (ProjMat4x4 * ViewMat4x4 * transMat4x4);	// Create model's View Matrix.
+<<<<<<< HEAD
 	//mat4 modelViewProjMat	= (ProjMat4x4 * ViewMat4x4 );	// Create model's View Matrix.
 	
 	tempva					= rotOrMat4x4 * tempva;	
@@ -661,4 +662,35 @@ void main( void )
 		
 	
 	gl_Position				= ProjMat4x4 * P;
+=======
+	mat4 modelViewProjMat	= (ProjMat4x4 * ViewMat4x4 );	// Create model's View Matrix.
+	
+	tempva					= rotOrMat4x4 * tempva;	
+	
+	vec3 normalP			= vec3(0.0,1.0,0.0);
+	//vec3 lightVect			= vec3(1.0,1.0,1.0);
+	
+	//lightVect 				= normalize(lightVect);
+	vec3 lightVect			= normalize(camPos - tempva.xyz);
+		
+	float sizePr			= dot(normalP,tempva.xyz) / dot(normalP,lightVect);
+	
+	sizePr					= abs(sizePr);
+	
+	tempva					= tempva - vec4(lightVect.xyz*sizePr,0.0);
+	tempva 					= transMat4x4 * tempva;
+	
+	
+	
+	//depthZ					= (10000.0 - tempva.z )/(30000.0-10000.0);		//works Properly
+	
+	depthZ					= (zNear - tempva.z )/(zFar - zNear);
+	
+
+	//vec4 P					= (modelViewProjMat *ShadowMat4x4 * tempva );
+	vec4 P					= (modelViewProjMat * tempva );
+		
+	P						= P/P.w;
+	gl_Position				= P;
+>>>>>>> 30e048104403fa5ef7bed9d37f608936d5c07194
 }

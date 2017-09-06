@@ -602,7 +602,11 @@ void cameraChanged(){
 		CanvasSizeMts = aux3;
 		DistCam = (CanvasSizeMts / tan(45.0*0.5))*scalfac;
 		//glsl_manager->setUniformf("depth_rect","z_Far",(DistCam/scalfac));
+<<<<<<< HEAD
 		glsl_manager->vZFar 	= DistCam;
+=======
+		glsl_manager->vZFar 	= DistCam*100.0;
+>>>>>>> 30e048104403fa5ef7bed9d37f608936d5c07194
 		glsl_manager->vZNear	= 100.0;
 
 		/*
