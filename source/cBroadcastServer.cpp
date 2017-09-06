@@ -192,14 +192,9 @@ void broadcast_server::on_message(connection_hdl hdl, server::message_ptr msg)
 
 						*/
 
-<<<<<<< HEAD
 					//	needMoreFrames = true;
 						//stop = false;
-=======
-						needMoreFrames = true;
-						//stop = false;
 						//pthread_mutex_unlock (pc_MutexObj);
->>>>>>> 30e048104403fa5ef7bed9d37f608936d5c07194
 				}
     		}
     		if (val.str().compare("GiveMeMore") == 0 || val.str().compare("STSIM")==0 )

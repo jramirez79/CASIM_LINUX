@@ -712,34 +712,19 @@ void main( void )
 	//tempva					= tempva - vec4(lightVec.xyz*sizePr,0.0);
 	tempva 					= transMat4x4 * tempva;
 	
-<<<<<<< HEAD
 	//depthZ					= (zNear - tempva.z)/(zFar - zNear);
 	//depthZ					= (4096 - tempva.z)*0.5/4096;
 	
 	//vec4 P					= (modelViewMat * tempva);
 			
-	vec4 P					= (ViewMat4x4 * tempva);
-	
-	
-	
-	
-	lightVec				= normalize( camPos - P.xyz );
-	P						= P/P.w;
-	
-	//depthZ					= (4096 - P.z)*0.5/4096;
-	depthZ					= (-0.5*P.z)/zFar	;
-=======
-	depthZ					= (zNear - tempva.z)/(zFar - zNear);
-	
-	//vec4 P					= (modelViewMat * tempva);
 		
 	vec4 P					= (ViewMat4x4 * tempva);
 	
 	lightVec				= normalize( camPos - P.xyz );
 	P						= P/P.w;
+	depthZ					= (-0.5*P.z)/zFar	;	
 	
->>>>>>> 30e048104403fa5ef7bed9d37f608936d5c07194
-	
+			
 	gl_Position				= gl_ProjectionMatrix * P;
 	//depthZ					= (gl_Position.z- zNear)/(zFar - zNear);
 	N						= normalize(gl_NormalMatrix * normal.xyz);
